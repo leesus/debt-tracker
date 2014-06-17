@@ -2,7 +2,7 @@
   "name": "debt-tracker",
   "version": "0.0.0",
   "description": "Track your debtors and repayments",
-  "main": "app.js",
+  "main": "server.js",
   "scripts": {
     "test": "mocha -R spec tests"
   },
