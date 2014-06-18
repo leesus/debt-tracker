@@ -4,9 +4,10 @@ var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
 
 // Models
-var Debtor = require('./app/models/debtor');
-var Debt = require('./app/models/debt');
-var Repayment = require('./app/models/repayment');
+var User = require('./server/models/user');
+var Debtor = require('./server/models/debtor');
+var Debt = require('./server/models/debt');
+var Repayment = require('./server/models/repayment');
 
 mongoose.connect('mongodb://localhost:27017/debt-tracker');
 
@@ -21,61 +22,28 @@ app.get('/', function(req, res, next) {
 
 // Middleware
 app.use(bodyParser());
+
+// API routes
+// TODO - Refactor out
 app.use('/api', router);
-
-// API routes - refactor out later
-// Debtor routes
-var debtors = router.route('/debtors');
-
-// GET: /api/debtors
-debtors.get(function(req, res, next) {
-  Debtor.find(function(err, debtors) {
-    if (err) res.send(err);
-
-    if (!debtors.length) debtors = { message: 'There are no debtors, add some to get started' };
-
-    res.json(debtors);
+// Account routes
+var account = router.route('/account');
+account.post('/signup', function(req, res, next) {
+  var user = new User({
+    email: req.body.email, 
+    password: req.body.password
+  });
+  user.save(function(err) {
+    if (err) return next(err);
+    res.send(200);
   });
 });
-// POST: /api/debtors
-debtors.post(function(req, res, next) {
-  var debtor = new Debtor();
-  debtor.name = req.body.name;
+account.post('/login', function(req, res, next) {
 
-  debtor.save(function(err) {
-    if (err) res.send(err);
-
-    res.json({ message: 'Debtor successfully added.', data: debtor });
-  });
 });
-
-// Debt routes
-var debts = router.route('/debts');
-
-// GET: /api/debts
-debts.get(function(req, res, next) {
-  Debt.find(function(err, debts) {
-    if (err) res.send(err);
-
-    if (!debts.length) debts = { message: 'There are no debts, add some to get started' };
-
-    res.json(debts);
-  });
-});
-// POST: /api/debts
-debts.post(function(req, res, next) {
-  var debt = new Debt();
-  debt.name = req.body.name;
-  debt.date = new Date();
-  debt.amount = +req.body.amount;
-  debt.archived = false;
-  debt.debtor = req.body.debtor;
-
-  debt.save(function(err) {
-    if (err) res.send(err);
-
-    res.json({ message: 'Debt successfully added.', data: debt });
-  });
+account.get('/logout', function(req, res, next) {
+  req.logout();
+  res.send(200);
 });
 
 // Error middleware
