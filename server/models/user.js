@@ -2,11 +2,15 @@ var mongoose = require('mongoose');
 var bcrypt = require('bcrypt');
 
 var UserSchema = new mongoose.Schema({
-  name: String,
-  email: { type: String, unique: true },
+  email: { type: String, unique: true, lowercase: true },
   password: String,
-  id: String,
-  token: String
+
+  facebook: String,
+  name: String,
+  tokens: Array,
+
+  resetPasswordToken: String,
+  resetPasswordExpires: Date
 });
 
 UserSchema.pre('save', function(next) {
@@ -23,10 +27,10 @@ UserSchema.pre('save', function(next) {
   });
 });
 
-UserSchema.methods.comparePassword = function(candidatePassword, cb) {
-  bcrypt.compare(candidatePassword, this.password, function(err, isMatch) {
-    if (err) return cb(err);
-    cb(null, isMatch);
+UserSchema.methods.comparePassword = function(password, fn) {
+  bcrypt.compare(password, this.password, function(err, isMatch) {
+    if (err) return fn(err);
+    fn(null, isMatch);
   });
 };
 
