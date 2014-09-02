@@ -45,13 +45,18 @@ passport.use(new LocalStrategy({ usernameField: 'email' }, function(email, passw
 
 // Sign in with Facebook
 passport.use(new FacebookStrategy(secrets.facebook, function(req, accessToken, refreshToken, profile, done) {
+  console.log(accessToken);
+  console.log(refreshToken);
+  console.log(profile);
   if (req.user) {
     User.findOne({ facebook: profile.id }, function(err, existingUser) {
       if (existingUser) {
+        console.log('Existing user, already linked!')
         req.flash('errors', { message: 'There is already a Facebook account that belongs to you. Sign in with that account or delete it and then link it with your current account.' });
         done(err);
       } else {
         User.findById(req.user.id, function(err, user) {
+          console.log('Existing user, linking now!')
           user.facebook = profile.id;
           user.tokens.push({ kind: 'facebook', accessToken: accessToken });
           user.name = user.name || profile.displayName;
@@ -64,12 +69,25 @@ passport.use(new FacebookStrategy(secrets.facebook, function(req, accessToken, r
     });
   } else {
     User.findOne({ facebook: profile.id }, function(err, existingUser) {
-      if (existingUser) return done(null, existingUser);
+      if (existingUser) {
+        console.log('Existing facebook user')
+        return done(null, existingUser);
+      }
       User.findOne({ email: profile._json.email }, function(err, existingEmailUser) {
         if (existingEmailUser) {
-          req.flash('errors', { message: 'There is already an account using this email address. Sign in with that account and link it with Facebook from account settings.' });
-          done(err);
+          console.log('Creating new user, already exists!')
+          //req.flash('errors', { message: 'There is already an account using this email address. Sign in with that account and link it with Facebook from account settings.' });
+          //done(err);
+          console.log(existingEmailUser)
+          existingEmailUser.facebook = profile.id;
+          existingEmailUser.tokens.push({ kind: 'facebook', accessToken: accessToken });
+          existingEmailUser.name = existingEmailUser.name || profile.displayName;
+          existingEmailUser.save(function(err) {
+            req.flash('info', { message: 'Facebook account has been linked.' });
+            done(err, existingEmailUser);
+          });
         } else {
+          console.log('Creating new user!')
           var user = new User();
           user.email = profile._json.email;
           user.facebook = profile.id;

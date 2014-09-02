@@ -6,10 +6,12 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var compress = require('compression');
 var session = require('express-session');
+var validator = require('express-validator');
 
 // Dependencies
 var passport = require('passport');
 var mongoose = require('mongoose');
+var MongoStore = require('connect-mongo')({ session: session });
 var flash = require('express-flash');
 
 // Routes
@@ -34,20 +36,32 @@ mongoose.connection.on('disconnect', function() {
 // view engine setup
 app.set('port', process.env.PORT || 3000);
 app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
+app.set('view engine', 'jade')
 app.use(compress());
+app.use(validator());
 app.use(favicon());
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded());
 app.use(cookieParser());
 app.use(session({
-    secret: secrets.sessionSecret
+    secret: secrets.sessionSecret,
+    store: new MongoStore({
+        url: secrets.db,
+        auto_reconnect: true,
+        collection: 'session'
+    })
 }));
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(flash());
 app.use(express.static(path.join(__dirname, '../client')));
+app.use(function(req, res, next) {
+    if (req.user) res.cookie('user', JSON.stringify(req.user));
+    next();
+});
+
+app.locals.environment = app.get('env');
 
 // Set redirect url
 app.use(function(req, res, next) {
@@ -59,7 +73,7 @@ app.use(function(req, res, next) {
 
 // Default home route
 app.get('/', function(req, res, next) {
-    res.render('index', { title: 'Easy Auth' });
+    res.render('index.ejs');
 });
 
 // Use api routes, e.g. /api/account/login
@@ -83,7 +97,7 @@ app.use(function(req, res, next) {
 if (app.get('env') === 'development') {
     app.use(function(err, req, res, next) {
         res.status(err.status || 500);
-        res.render('error', {
+        res.send({
             message: err.message,
             error: err
         });
@@ -93,7 +107,7 @@ if (app.get('env') === 'development') {
 // no stacktraces leaked to user
 app.use(function(err, req, res, next) {
     res.status(err.status || 500);
-    res.render('error', {
+    res.send({
         message: err.message,
         error: {}
     });
