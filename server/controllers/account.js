@@ -12,9 +12,10 @@ module.exports.login = function(req, res, next) {
     return res.send({ success: false, message: 'Login failed', errors: errors });
   }
 
-  passport.authenticate('local', function(err, user, info) {
+  passport.authenticate('local-login', function(err, user, info) {
     if (err) return console.log(err) && next(err);
     if (!user) res.send({ success: false, message: 'Login failed' });
+
     req.logIn(user, function(err) {
       if (err) return console.log(err) && next(err);
       res.cookie('user', JSON.stringify(req.user));
@@ -33,7 +34,17 @@ module.exports.signup = function(req, res, next) {
     return res.send({ success: false, message: 'Signup failed', errors: errors });
   }
 
-  var user = new User({
+  passport.authenticate('local-signup', function(err, user, info) {
+    if (err) return next(err);
+
+    req.logIn(user, function(err) {
+      if (err) return console.log(err) && next(err);
+      res.cookie('user', JSON.stringify(req.user));
+      res.send({ success: true, message: 'Login successful', data: user });
+    });
+  })(req, res, next);
+
+  /*var user = new User({
     email: req.body.email,
     password: req.body.password
   });
@@ -47,7 +58,7 @@ module.exports.signup = function(req, res, next) {
         return res.send({ success: true, message: 'Signup successful', data: user });
       });
     });
-  });
+  });*/
 };
 
 module.exports.logout = function(req, res, next) {

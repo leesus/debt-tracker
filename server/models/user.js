@@ -2,33 +2,36 @@ var mongoose = require('mongoose');
 var bcrypt = require('bcrypt');
 
 var UserSchema = new mongoose.Schema({
-  email: { type: String, unique: true, lowercase: true },
-  password: String,
-
-  facebook: String,
   name: String,
-  tokens: Array,
 
-  resetPasswordToken: String,
-  resetPasswordExpires: Date
+  local: {
+    email: { type: String, lowercase: true },
+    password: String
+  },
+
+  facebook: {
+    id: String,
+    token: String,
+    email: { type: String, lowercase: true }
+  }
 });
 
 UserSchema.pre('save', function(next) {
   var user = this;
 
-  if (!user.isModified('password')) return next();
+  if (!user.isModified('local.password')) return next();
   bcrypt.genSalt(10, function(err, salt) {
     if (err) return next(err);
-    bcrypt.hash(user.password, salt, function(err, hash) {
+    bcrypt.hash(user.local.password, salt, function(err, hash) {
       if (err) return next(err);
-      user.password = hash;
+      user.local.password = hash;
       next();
     });
   });
 });
 
 UserSchema.methods.comparePassword = function(password, fn) {
-  bcrypt.compare(password, this.password, function(err, isMatch) {
+  bcrypt.compare(password, this.local.password, function(err, isMatch) {
     if (err) return fn(err);
     fn(null, isMatch);
   });

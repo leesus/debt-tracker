@@ -8,6 +8,7 @@ angular.module('debttracker')
         login: function(user) {
           return $http.post('/api/account/login', user)
             .success(function(res) {
+              console.log(res)
               if (res.success) {
                 $rootScope.currentUser = res.data;
                 $location.path('/');
@@ -32,7 +33,7 @@ angular.module('debttracker')
         signup: function(user) {
           return $http.post('/api/account/signup', user)
             .success(function(res){
-              console.log(data)
+              console.log(res)
               $rootScope.currentUser = res.data;
               $location.path('/');
 
