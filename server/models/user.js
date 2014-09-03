@@ -2,7 +2,8 @@ var mongoose = require('mongoose');
 var bcrypt = require('bcrypt');
 
 var UserSchema = new mongoose.Schema({
-  name: String,
+  firstName: String,
+  lastName: String,
 
   local: {
     email: { type: String, lowercase: true },
@@ -13,13 +14,16 @@ var UserSchema = new mongoose.Schema({
     id: String,
     token: String,
     email: { type: String, lowercase: true }
-  }
+  },
+
+  created: { type: Date, 'default': Date.now }
 });
 
 UserSchema.pre('save', function(next) {
   var user = this;
 
   if (!user.isModified('local.password')) return next();
+  
   bcrypt.genSalt(10, function(err, salt) {
     if (err) return next(err);
     bcrypt.hash(user.local.password, salt, function(err, hash) {
@@ -35,6 +39,11 @@ UserSchema.methods.comparePassword = function(password, fn) {
     if (err) return fn(err);
     fn(null, isMatch);
   });
+};
+
+UserSchema.methods.getFullName = function() {
+  if (this.firstName && this.lastName) return this.firstName + ' ' + this.lastName;
+  return '';
 };
 
 module.exports = mongoose.model('User', UserSchema);

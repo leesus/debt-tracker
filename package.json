@@ -24,5 +24,11 @@
     "ejs": "~1.0.0",
     "express-validator": "~2.3.0",
     "connect-mongo": "~0.4.1"
+  },
+  "devDependencies": {
+    "should": "~4.0.4",
+    "mocha": "~1.21.4",
+    "supertest": "~0.13.0",
+    "sinon": "~1.10.3"
   }
 }
