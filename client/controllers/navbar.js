@@ -1,6 +1,6 @@
 angular.module('debttracker')
-  .controller('NavbarCtrl', ['$scope', 'Auth', function($scope, Auth) {
+  .controller('NavbarCtrl', ['$scope', 'session', function($scope, session) {
     $scope.logout = function() {
-      Auth.logout();
+      session.logout();
     };
   }]);

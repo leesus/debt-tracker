@@ -1,13 +1,16 @@
 angular.module('debttracker')
-  .factory('session', ['$rootScope', '$window', '$http', '$cookieStore', '$alert',
-    function($rootScope, $window, $http, $cookieStore, $alert) {
+  .factory('session', ['$rootScope', '$window', '$http', '$cookieStore', '$alert', '$location',
+    function($rootScope, $window, $http, $cookieStore, $alert, $location) {
       var session = {
         init: function() {
-          this.reset();
+          console.log('hello')
+          $rootScope.currentUser = this.currentUser = $cookieStore.get('user');
+          $rootScope.isLoggedIn = this.isLoggedIn = !!this.currentUser;
+          $cookieStore.remove('user');
         },
         reset: function() {
-          this.currentUser = null;
-          this.isLoggedIn = false;
+          $rootScope.currentUser = this.currentUser = null;
+          $rootScope.isLoggedIn = this.isLoggedIn = false;
           $cookieStore.remove('user');
         },
         oauthLogin: function(provider) {
@@ -27,7 +30,7 @@ angular.module('debttracker')
               if (res.success) {
                 _this.authSuccess(res.data, 'You have successfully logged in.');
               } else {
-                _this.authFailure('Invalid username or password.');
+                _this.authFailed('Invalid username or password.');
               }
             });
         },
@@ -39,7 +42,8 @@ angular.module('debttracker')
               _this.authSuccess(res.data, 'Your account has been created.');
             })
             .error(function(res){
-              
+              console.log(res)
+              _this.authFailed('Sorry, there was an error while trying to create your account.');
             });
         },
         logout: function() {
@@ -54,28 +58,36 @@ angular.module('debttracker')
               type: 'info',
               duration: 3
             });
+
+            $location.path('/');
           });
         },
         authSuccess: function(user, message) {
-          this.currentUser = user;
-          this.isLoggedIn = true;
+          $rootScope.currentUser = this.currentUser = user;
+          $rootScope.isLoggedIn = this.isLoggedIn = true;
+
+          $location.path('/');
 
           $alert({
-            content: message,
+            content: message || 'You have successfully logged in.',
             placement: 'top-right',
             type: 'success',
             duration: 3
           });
         },
         authFailed: function(message) {
-          this.resetSession();
+          this.reset();
 
           $alert({
-            content: message,
+            content: message || 'There was an error logging you in, please try again.',
             placement: 'top-right',
             type: 'danger',
             duration: 3
           });
         }
       };
+
+      session.init();
+
+      return session;
     }]);

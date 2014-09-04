@@ -12,10 +12,10 @@
 
         var state = '<%= state %>';
         var user = <%- JSON.stringify(user) %>;
-        if (window.opener.app &&
-            window.opener.app.authState) {
+        if (window.opener.debttracker &&
+            window.opener.debttracker.authState) {
 
-            window.opener.app.authState(state, user);
+            window.opener.debttracker.authState(state, user);
         }
     }
     window.close();

@@ -1,7 +1,7 @@
 angular.module('debttracker')
-  .controller('SignupCtrl', ['$scope', 'Auth', function($scope, Auth){
+  .controller('SignupCtrl', ['$scope', 'session', function($scope, session){
     $scope.signup = function() {
-      Auth.signup({
+      session.signup({
         email: $scope.email,
         password: $scope.password
       });

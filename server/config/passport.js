@@ -2,7 +2,7 @@ var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
 var FacebookStrategy = require('passport-facebook').Strategy;
 var User = require('../models/user');
-var secrets = require('./secrets');
+var secrets = require('./secrets')[process.env.NODE_ENV || 'development'];
 
 // Session de/serialize
 passport.serializeUser(function(user, done) {
@@ -49,6 +49,7 @@ passport.use('local-signup', new LocalStrategy({
   process.nextTick(function() {
     if (!req.user) {
       User.findOne({ 'local.email': email }, function(err, user) {
+console.log(err)
         if (err) return done(err);
 
         if (user) return done(null, false, req.flash('signupMessage', 'That email is already taken.'));
@@ -90,6 +91,7 @@ passport.use('local-signup', new LocalStrategy({
         return done(null, user);
       });
     } else {
+      console.log(req.user)
       return done(null, req.user);
     }
   });
@@ -117,7 +119,8 @@ passport.use(new FacebookStrategy(secrets.facebook, function(req, token, refresh
 
         if (user) {
           if (!user.facebook.token) {
-            user.name = user.name || profile.displayName;
+            user.firstName = user.firstName || profile.name.givenName;
+            user.lastName = user.lastName || profile.name.familyName;
             user.facebook.token = token;
             user.facebook.id = profile.id;
             user.facebook.email = (profile.emails[0].value || profile._json.email).toLowerCase();
@@ -127,14 +130,15 @@ passport.use(new FacebookStrategy(secrets.facebook, function(req, token, refresh
               return done(null, user);
             });
           }
-
+          console.log(profile)
           return done(null, user);
         } else {
           var newUser = new User();
           
           newUser.facebook.token = token;
           newUser.facebook.id = profile.id;
-          newUser.name = profile.displayName;
+          newUser.firstName = profile.name.givenName;
+          newUser.lastName = profile.name.familyName;
           newUser.facebook.email = (profile.emails[0].value || profile._json.email).toLowerCase();
 
           newUser.save(function(err) {
@@ -148,7 +152,8 @@ passport.use(new FacebookStrategy(secrets.facebook, function(req, token, refresh
           
       user.facebook.token = token;
       user.facebook.id = profile.id;
-      user.name = user.name || profile.displayName;profile.displayName;
+      user.firstName = user.firstName || profile.name.givenName;
+      user.lastName = user.lastName || profile.name.familyName;
       user.facebook.email = (profile.emails[0].value || profile._json.email).toLowerCase();
 
       user.save(function(err) {

@@ -19,7 +19,7 @@ var routes = require('./routes');
 
 // Config
 var passportConfig = require('./config/passport');
-var secrets = require('./config/secrets');
+var secrets = require('./config/secrets')[process.env.NODE_ENV || 'development'];
 
 // Create express
 var app = express();

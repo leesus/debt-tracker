@@ -18,12 +18,12 @@ router
   .post('/account/signup', controllers.account.signup)
   .get('/account/logout', controllers.account.logout)
   .get('/auth/facebook', passport.authenticate('facebook', { scope: ['email'] }))
-  .get('/auth/facebook/callback', passport.authenticate('facebook', { successRedirect: '/auth/success', failureRedirect: '/auth/failure' }))
+  .get('/auth/facebook/callback', passport.authenticate('facebook', { successRedirect: '/api/auth/success', failureRedirect: '/api/auth/failure' }))
   .get('/auth/success', function(req, res) {
-    res.render('after-auth', { state: 'success', user: req.user ? req.user : null });
+    res.render('after-auth.ejs', { state: 'success', user: req.user ? req.user : null });
   })
   .get('/auth/failure', function(req, res) {
-    res.render('after-auth', { state: 'failure', user: null });
+    res.render('after-auth.ejs', { state: 'failure', user: null });
   });
 
 

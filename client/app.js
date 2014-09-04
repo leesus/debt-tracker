@@ -1,15 +1,6 @@
 angular.module('debttracker', ['ngCookies', 'ngResource', 'ngMessages', 'ngRoute', 'mgcrea.ngStrap'])
-  .config(['$routeProvider', '$locationProvider', '$httpProvider',
+  .config(['$routeProvider', '$locationProvider', '$httpProvider', 
     function($routeProvider, $locationProvider, $httpProvider){
-      /**
-       * Check if user is logged in
-       */
-      /*var loggedIn = function($q, $timeout, $http, $location, $rootScope) {
-        var deferred = $q.defer();
-
-        $http.get('/api/loggedin')
-      };*/
-
       $locationProvider.html5Mode(true);
 
       $routeProvider
@@ -28,4 +19,15 @@ angular.module('debttracker', ['ngCookies', 'ngResource', 'ngMessages', 'ngRoute
         .otherwise({
           redirectTo: '/'
         });
+  }])
+  .run(['$rootScope', '$window', 'session',
+    function($rootScope, $window, session) {
+      $window.debttracker = {
+        authState: function(state, user) {
+          $rootScope.$apply(function() {
+            if (state == 'success') session.authSuccess(user);
+            if (state == 'failure') session.authFailed();
+          });
+        }
+      };
   }]);
