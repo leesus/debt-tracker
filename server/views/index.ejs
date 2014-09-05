@@ -20,11 +20,16 @@
       <li ng-repeat="page in pages" ng-class="{ active: isActive(page.path) }" ng-if="page.restricted ? isLoggedIn : true"><a href="{{ page.path }}" title="{{ page.name }}">{{ page.name }}</a></li>
     </ul>
     <ul class="nav navbar-nav pull-right" ng-if="!isLoggedIn">
-      <li ng-class="{ active: isActive('/login') }"><a href="/login">Login</a></li>
-      <li ng-class="{ active: isActive('/signup') }"><a href="/signup">Sign up</a></li>
+      <li ng-class="{ active: isActive('/login') }"><a href="/login" title="Login to DebtTracker">Login</a></li>
+      <li ng-class="{ active: isActive('/signup') }"><a href="/signup" title="Sign up to DebtTracker">Sign up</a></li>
     </ul>
     <ul class="nav navbar-nav pull-right" ng-if="isLoggedIn">
-      <li ng-class="{ active: isActive('/account') }"><a href="/account" ng-bind="currentUser.displayName || currentUser.local.email"></a></li>
+      <li ng-class="{ active: isActive('/account') }">
+        <a href="/account" title="Account settings">
+          <span class="glyphicon glyphicon-cog"></span>
+          {{ currentUser.displayName || currentUser.local.email }}
+        </a>
+      </li>
       <li><a href="javascript:void(0)" ng-click="logout()">Logout</a></li>
     </ul>
   </div>

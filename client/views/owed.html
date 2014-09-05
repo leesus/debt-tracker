@@ -1,5 +1,68 @@
 <div class="jumbotron">
   <div class="container">
-    {{ welcome }}
+    <h1>What you're owed</h1>
+    <p>See what you're owed, by whom and for what reason, along with any payments that have been made; think of it as a bank statement for your debts.</p>
   </div>
+</div>
+
+<div class="container">
+  <p class="clearfix">
+    <button class="btn btn-primary pull-right" ng-click="addDebt()">Add a debt</button>
+  </p>
+
+  <!-- <div class="row">
+    <div class="center-form panel">
+      <form method="post" ng-submit="addDebt()" name="addDebtForm">
+        <div class="panel-body">
+          <h2 class="text-center">Add a debt</h2>
+
+          <div class="form-group"
+               ng-class="{ 'has-success' : signupForm.email.$valid && signupForm.email.$dirty, 'has-error' : signupForm.email.$invalid && signupForm.email.$dirty }">
+            <input class="form-control input-lg" type="email" id="email"
+                   name="date" ng-model="date" placeholder="Date" required
+                   autofocus>
+
+            <div class="help-block text-danger" ng-if="signupForm.email.$dirty"
+                 ng-messages="signupForm.email.$error">
+              <div ng-message="required">Your email address is required.</div>
+              <div ng-message="email">Your email address is invalid.</div>
+            </div>
+          </div>
+
+          <div class="form-group"
+               ng-class="{ 'has-success' : signupForm.password.$valid && signupForm.password.$dirty, 'has-error' : signupForm.password.$invalid && signupForm.password.$dirty }">
+            <input class="form-control input-lg" type="password" name="password"
+                   ng-model="password" placeholder="Password" required>
+
+            <div class="help-block text-danger"
+                 ng-if="signupForm.password.$dirty"
+                 ng-messages="signupForm.password.$error">
+              <div ng-message="required">Password is required.</div>
+            </div>
+          </div>
+
+          <button type="submit" ng-disabled="signupForm.$invalid"
+                  class="btn btn-lg btn-block btn-primary">Create Account
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+ -->
+  <table class="panel table table-bordered table-responsive">
+    <thead>
+      <th>Date</th>
+      <th><dfn title="The person you owe">Creditor</dfn></th>
+      <th><dfn title="Why you owe them">Reason</dfn></th>
+      <th>Amount</th>
+    </thead>
+    <tbody>
+      <tr>
+        <td>29th August 2014</td>
+        <td>John Smith</td>
+        <td>A pint or two down the Wheatsheaf</td>
+        <td>£10.21</td>
+      </tr>
+    </tbody>
+  </table>
 </div>
