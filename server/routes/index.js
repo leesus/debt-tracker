@@ -3,7 +3,7 @@ var passport = require('passport');
 
 // Controllers
 var controllers = {
-  account: require('../controllers/account')
+  auth: require('../controllers/auth')
 };
 
 // Middleware
@@ -12,9 +12,9 @@ var isAuthenticated = passport.isAuthenticated;
 // Routes
 router
   // Account routes - sign in/sign up/sign out/oauth
-  .post('/account/login', controllers.account.login)
-  .post('/account/signup', controllers.account.signup)
-  .get('/account/logout', controllers.account.logout)
+  .post('/auth/login', controllers.auth.login)
+  .post('/auth/signup', controllers.auth.signup)
+  .get('/auth/logout', controllers.auth.logout)
   .get('/auth/facebook', passport.authenticate('facebook', { scope: ['email'] }))
   .get('/auth/facebook/callback', passport.authenticate('facebook', { successRedirect: '/api/auth/success', failureRedirect: '/api/auth/failure' }))
   .get('/auth/success', function(req, res) {

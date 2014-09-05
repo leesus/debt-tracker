@@ -11,7 +11,7 @@ passport.serializeUser(function(user, done) {
 
 passport.deserializeUser(function(id, done) {
   User.findById(id, function(err, user) {
-    done(err, user);
+    done(null, user);
   });
 });
 
@@ -24,19 +24,32 @@ passport.use('local-login', new LocalStrategy({
   if (email) email = email.toLowerCase();
 
   process.nextTick(function() {
-    User.findOne({ 'local.email': email }, function(err, user) {
+    User.findOne({ 'email': email }, function(err, user) {
       if (err) return done(err);
-
-      if (!user) return done(null, false, req.flash('loginMessage', 'No user found.'));
+      if (!user) return done(null, false, { message: 'No user found.' });
 
       user.comparePassword(password, function(err, isMatch) {
         if (err) return done(err);
-        if (!isMatch) return done(null, false, req.flash('loginMessage', 'Email or password incorrect!'));
-        return done(null, user);
+        if (!isMatch) return done(null, false, { message: 'Email or password incorrect.' });
+        return done(null, user, { message: 'Login successful.' });
       });
     });
   });
 }));
+
+
+/**
+ * Local Strategy:
+ *
+ * - User not logged in
+ *   - If user exists
+ *     - If password throw error
+ *     - Else add password to existing account
+ *   - Else create new local account
+ * - User already logged in
+ *   - If no password, add it
+ *   - Else return user
+ */
 
 // Local signup
 passport.use('local-signup', new LocalStrategy({
@@ -48,49 +61,47 @@ passport.use('local-signup', new LocalStrategy({
 
   process.nextTick(function() {
     if (!req.user) {
-      User.findOne({ 'local.email': email }, function(err, user) {
+      User.findOne({ 'email': email }, function(err, signedOutUser) {
         if (err) return done(err);
 
-        if (user) return done(null, false, req.flash('signupMessage', 'That email is already taken.'));
-
-        // Before creating a user, let's see if there's a facebook account with that address
-        User.findOne({ 'facebook.email': email }, function(err, fbUser) {
-          if (err) return done(err);
-          if (fbUser) {
-            fbUser.local.email = email;
-            fbUser.local.password = password;
-
-            fbUser.save(function(err) {
-              if (err) return done(err);
-              return done(null, fbUser);
-            })
+        if (signedOutUser) {
+          if (signedOutUser.password) {
+            // If user has a password, we can assume that it's an existing account.
+            return done(null, false, { message: 'That email is already taken.' });
           } else {
-            var newUser = new User({
-              local: {
-                email: email,
-                password: password
-              }
-            });
+            // Otherwise, it's an oauth account, add the password
+            signedOutUser.password = password;
 
-            newUser.save(function(err) {
+            signedOutUser.save(function(err) {
               if (err) return done(err);
-              return done(null, newUser);
+              return done(null, user);
             });
           }
-        })        
+        } else {
+          // Create a new account
+          var newUser = new User({
+            email: [email],
+            password: password
+          });
+
+          newUser.save(function(err) {
+            if (err) return done(err);
+            return done(null, newUser);
+          });
+        }
       });
-    } else if (!req.user.local.email) {
+    } else if (!req.user.password) {
       var user = req.user;
       
-      user.local.email = email;
-      user.local.password = password;
+      if (!user.email.contains(email)) user.email.push(email);
+      user.password = password;
 
       user.save(function(err) {
         if (err) return done(err);
-        return done(null, user);
+        return done(null, user, { message: 'Local password assigned to existing social sign on user.' });
       });
     } else {
-      return done(null, req.user);
+      return done(null, req.user, { message: 'User already signed in.' });
     }
   });
 }));
@@ -110,6 +121,8 @@ passport.use('local-signup', new LocalStrategy({
 // Sign in with Facebook
 passport.use(new FacebookStrategy(secrets.facebook, function(req, token, refreshToken, profile, done) {
   
+  var email = (profile.emails[0].value || profile._json.email).toLowerCase();
+  
   process.nextTick(function() {
     if (!req.user) {
       User.findOne({ 'facebook.id' : profile.id }, function(err, user) {
@@ -122,14 +135,13 @@ passport.use(new FacebookStrategy(secrets.facebook, function(req, token, refresh
             user.displayName = user.displayName || profile.displayName || user.firstName + ' ' + user.lastName;
             user.facebook.token = token;
             user.facebook.id = profile.id;
-            user.facebook.email = (profile.emails[0].value || profile._json.email).toLowerCase();
+            if (!user.email.indexOf(email) === -1) user.email.push(email);
 
             user.save(function(err) {
               if (err) return done(err);
               return done(null, user);
             });
           }
-          console.log(profile)
           return done(null, user);
         } else {
           var newUser = new User();
@@ -139,7 +151,7 @@ passport.use(new FacebookStrategy(secrets.facebook, function(req, token, refresh
           newUser.firstName = profile.name.givenName;
           newUser.lastName = profile.name.familyName;
           newUser.displayName = newUser.displayName || profile.displayName || newUser.firstName + ' ' + newUser.lastName;
-          newUser.facebook.email = (profile.emails[0].value || profile._json.email).toLowerCase();
+          newUser.email.push(email);
 
           newUser.save(function(err) {
             if (err) return done(err);
@@ -155,7 +167,7 @@ passport.use(new FacebookStrategy(secrets.facebook, function(req, token, refresh
       user.firstName = user.firstName || profile.name.givenName;
       user.lastName = user.lastName || profile.name.familyName;
       user.displayName = user.displayName || profile.displayName || user.firstName + ' ' + user.lastName;
-      user.facebook.email = (profile.emails[0].value || profile._json.email).toLowerCase();
+      if (user.email.indexOf(email) === -1) user.email.push(email);
 
       user.save(function(err) {
         if (err) return done(err);
@@ -168,8 +180,8 @@ passport.use(new FacebookStrategy(secrets.facebook, function(req, token, refresh
 // Middlewares
 exports.isAuthenticated = function(req, res, next) {
   if (req.isAuthenticated()) return next();
-  //res.redirect('/login');
   res.status(401);
+  next();
 };
 
 exports.isAuthorized = function(req, res, next) {

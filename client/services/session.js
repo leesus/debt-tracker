@@ -24,31 +24,31 @@ angular.module('debttracker')
         login: function(user) {
           var _this = this;
 
-          $http.post('/api/account/login', user)
+          $http.post('/api/auth/login', user)
             .success(function(res) {
               if (res.success) {
-                _this.authSuccess(res.data, 'You have successfully logged in.');
+                _this.authSuccess(res.data, res.message);
               } else {
-                _this.authFailed('Invalid username or password.');
+                _this.authFailed(res.message);
               }
             });
         },
         signup: function(user) {
           var _this = this;
 
-          $http.post('/api/account/signup', user)
+          $http.post('/api/auth/signup', user)
             .success(function(res){
-              _this.authSuccess(res.data, 'Your account has been created.');
+              _this.authSuccess(res.data, res.message);//'Your account has been created.'
             })
             .error(function(res){
               console.log(res)
-              _this.authFailed('Sorry, there was an error while trying to create your account.');
+              _this.authFailed(res.message);//'Sorry, there was an error while trying to create your account.'
             });
         },
         logout: function() {
           var _this = this;
 
-          $http.get('/api/account/logout').success(function() {
+          $http.get('/api/auth/logout').success(function() {
             _this.reset();
 
             $alert({

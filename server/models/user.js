@@ -8,21 +8,18 @@ var UserSchema = new Schema({
   lastName: String,
   displayName: String,
 
-  local: {
-    email: { type: String, lowercase: true },
-    password: String
-  },
+  email: [String],
+  password: String,
 
   facebook: {
     id: String,
-    token: String,
-    email: { type: String, lowercase: true }
+    token: String
   },
 
   created: { type: Date, 'default': Date.now },
+  activated: Boolean,
 
   payments: [{ type: Schema.Types.ObjectId, ref: 'Payment' }],
-
   debts: [{ type: Schema.Types.ObjectId, ref: 'Debt' }]
 });
 

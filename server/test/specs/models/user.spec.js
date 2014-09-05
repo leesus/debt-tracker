@@ -68,6 +68,10 @@ describe('User model', function() {
     this.user.displayName.should.equal('Lee Ellam');
   });
 
+  it('should have an activated property', function() {
+    this.user.activated.should.be.ok;
+  });
+
   it('should have a local.email property', function() {
     this.user.local.email.should.equal('test@test.com');
   });
