@@ -1,8 +1,8 @@
-var app = require('./server');
-var port = app.get('port');
+var server = require('./server');
+var port = server.get('port');
 
-app.listen(port, function(){
-    console.log('==========================');
-    console.log('App listening on port %s', port);
-    console.log('==========================');
+server.listen(port, function(){
+    console.log('===========================');
+    console.log('Server running on port %s', port);
+    console.log('===========================');
 });

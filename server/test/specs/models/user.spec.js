@@ -64,8 +64,8 @@ describe('User model', function() {
     this.user.lastName.should.equal('Ellam');
   });
 
-  it('should have a getFullName method', function() {
-    this.user.getFullName().should.equal('Lee Ellam');
+  it('should have a displayName property', function() {
+    this.user.displayName.should.equal('Lee Ellam');
   });
 
   it('should have a local.email property', function() {

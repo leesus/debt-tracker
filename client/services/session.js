@@ -3,7 +3,6 @@ angular.module('debttracker')
     function($rootScope, $window, $http, $cookieStore, $alert, $location) {
       var session = {
         init: function() {
-          console.log('hello')
           $rootScope.currentUser = this.currentUser = $cookieStore.get('user');
           $rootScope.isLoggedIn = this.isLoggedIn = !!this.currentUser;
           $cookieStore.remove('user');

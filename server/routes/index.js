@@ -7,13 +7,11 @@ var controllers = {
 };
 
 // Middleware
-var auth = function(req, res, next) {
-  if (req.isAuthenticated()) return next();
-  res.send(401);
-};
+var isAuthenticated = passport.isAuthenticated;
 
 // Routes
 router
+  // Account routes - sign in/sign up/sign out/oauth
   .post('/account/login', controllers.account.login)
   .post('/account/signup', controllers.account.signup)
   .get('/account/logout', controllers.account.logout)
@@ -25,8 +23,6 @@ router
   .get('/auth/failure', function(req, res) {
     res.render('after-auth.ejs', { state: 'failure', user: null });
   });
-
-
 
 // Export routes
 module.exports = router;

@@ -1,9 +1,12 @@
 var mongoose = require('mongoose');
 var bcrypt = require('bcrypt');
 
-var UserSchema = new mongoose.Schema({
+var Schema = mongoose.Schema;
+
+var UserSchema = new Schema({
   firstName: String,
   lastName: String,
+  displayName: String,
 
   local: {
     email: { type: String, lowercase: true },
@@ -16,7 +19,11 @@ var UserSchema = new mongoose.Schema({
     email: { type: String, lowercase: true }
   },
 
-  created: { type: Date, 'default': Date.now }
+  created: { type: Date, 'default': Date.now },
+
+  payments: [{ type: Schema.Types.ObjectId, ref: 'Payment' }],
+
+  debts: [{ type: Schema.Types.ObjectId, ref: 'Debt' }]
 });
 
 UserSchema.pre('save', function(next) {
@@ -39,11 +46,6 @@ UserSchema.methods.comparePassword = function(password, fn) {
     if (err) return fn(err);
     fn(null, isMatch);
   });
-};
-
-UserSchema.methods.getFullName = function() {
-  if (this.firstName && this.lastName) return this.firstName + ' ' + this.lastName;
-  return '';
 };
 
 module.exports = mongoose.model('User', UserSchema);

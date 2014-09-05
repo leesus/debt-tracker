@@ -49,7 +49,6 @@ passport.use('local-signup', new LocalStrategy({
   process.nextTick(function() {
     if (!req.user) {
       User.findOne({ 'local.email': email }, function(err, user) {
-console.log(err)
         if (err) return done(err);
 
         if (user) return done(null, false, req.flash('signupMessage', 'That email is already taken.'));
@@ -91,7 +90,6 @@ console.log(err)
         return done(null, user);
       });
     } else {
-      console.log(req.user)
       return done(null, req.user);
     }
   });
@@ -121,6 +119,7 @@ passport.use(new FacebookStrategy(secrets.facebook, function(req, token, refresh
           if (!user.facebook.token) {
             user.firstName = user.firstName || profile.name.givenName;
             user.lastName = user.lastName || profile.name.familyName;
+            user.displayName = user.displayName || profile.displayName || user.firstName + ' ' + user.lastName;
             user.facebook.token = token;
             user.facebook.id = profile.id;
             user.facebook.email = (profile.emails[0].value || profile._json.email).toLowerCase();
@@ -139,6 +138,7 @@ passport.use(new FacebookStrategy(secrets.facebook, function(req, token, refresh
           newUser.facebook.id = profile.id;
           newUser.firstName = profile.name.givenName;
           newUser.lastName = profile.name.familyName;
+          newUser.displayName = newUser.displayName || profile.displayName || newUser.firstName + ' ' + newUser.lastName;
           newUser.facebook.email = (profile.emails[0].value || profile._json.email).toLowerCase();
 
           newUser.save(function(err) {
@@ -154,6 +154,7 @@ passport.use(new FacebookStrategy(secrets.facebook, function(req, token, refresh
       user.facebook.id = profile.id;
       user.firstName = user.firstName || profile.name.givenName;
       user.lastName = user.lastName || profile.name.familyName;
+      user.displayName = user.displayName || profile.displayName || user.firstName + ' ' + user.lastName;
       user.facebook.email = (profile.emails[0].value || profile._json.email).toLowerCase();
 
       user.save(function(err) {
@@ -167,7 +168,8 @@ passport.use(new FacebookStrategy(secrets.facebook, function(req, token, refresh
 // Middlewares
 exports.isAuthenticated = function(req, res, next) {
   if (req.isAuthenticated()) return next();
-  res.redirect('/login');
+  //res.redirect('/login');
+  res.status(401);
 };
 
 exports.isAuthorized = function(req, res, next) {
