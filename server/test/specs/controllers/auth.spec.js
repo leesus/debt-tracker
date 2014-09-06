@@ -9,36 +9,38 @@ var app = require('../../../index');
 var should = require('should');
 var sinon = require('sinon');
 
+var mongoose = require('mongoose');
 var passport = require('../../../config/passport');
 var config = require('../../../config/secrets')[process.env.NODE_ENV];
-var auth = require('../../../')
+var auth = require('../../../controllers/auth')
 var User = require('../../../models/user');
 
 describe('Auth controller', function() {
 
-  before(function(done) {
+  /*before(function(done) {
+
     if (mongoose.connection.db) {
       return done();
     }
 
-    mongoose.connect(config.db, done);    
+    mongoose.connect(config.db, done);
   });
 
   after(function(done) {
     mongoose.connection.db.dropDatabase(function(){
       mongoose.connection.close(done);
-      process.env.NODE_ENV = 'development';
+      //process.env.NODE_ENV = 'development';
     });
   });
 
   beforeEach(function(done) {
-    var _this = this;
-
-    mongoose.connection.db.dropDatabase(function(err){
-      if (err) return done(err);
-      done();
-    });
-  });
+    if (mongoose.connection.db) {
+      mongoose.connection.db.dropDatabase(function(err){
+        if (err) return done(err);
+        mongoose.connection.close(done);
+      });
+    }
+  });*/
 
   it('should have a login method', function() {
     auth.login.should.exist;

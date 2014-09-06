@@ -39,14 +39,12 @@ describe('User model', function() {
       _this.user = new User({
         firstName: 'Lee',
         lastName: 'Ellam',
-        local: {
-          email: 'test@test.com',
-          password: 'test'
-        },
+        displayName: 'Lee Ellam',
+        email: ['test@test.com'],
+        password: 'test',
         facebook: {
           id: '12345',
-          token: 'abc123',
-          email: 'test@test.com'
+          token: 'abc123'
         }
       });
 
@@ -69,19 +67,15 @@ describe('User model', function() {
   });
 
   it('should have an activated property', function() {
-    this.user.activated.should.be.ok;
+    this.user.activated.should.be.false;
   });
 
-  it('should have a local.email property', function() {
-    this.user.local.email.should.equal('test@test.com');
+  it('should have an email array', function() {
+    this.user.email[0].should.equal('test@test.com');
   });
 
-  it('should have a local.password property', function() {
-    this.user.local.password.should.be.ok;
-  });
-
-  it('should have a facebook.email property', function() {
-    this.user.facebook.email.should.equal('test@test.com');
+  it('should have a password property', function() {
+    this.user.password.should.be.ok;
   });
 
   it('should have a facebook.id property', function() {
@@ -126,7 +120,7 @@ describe('User model', function() {
     });
 
     it('should hash the password if changed', function(done) {
-      this.user.local.password = 'dogpoo';
+      this.user.password = 'dogpoo';
       this.user.save(function() {
         bcrypt.hash.called.should.be.true;
         done();

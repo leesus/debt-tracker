@@ -17,7 +17,7 @@ var UserSchema = new Schema({
   },
 
   created: { type: Date, 'default': Date.now },
-  activated: Boolean,
+  activated: { type: Boolean, 'default': false },
 
   payments: [{ type: Schema.Types.ObjectId, ref: 'Payment' }],
   debts: [{ type: Schema.Types.ObjectId, ref: 'Debt' }]
@@ -26,20 +26,20 @@ var UserSchema = new Schema({
 UserSchema.pre('save', function(next) {
   var user = this;
 
-  if (!user.isModified('local.password')) return next();
+  if (!user.isModified('password')) return next();
   
   bcrypt.genSalt(10, function(err, salt) {
     if (err) return next(err);
-    bcrypt.hash(user.local.password, salt, function(err, hash) {
+    bcrypt.hash(user.password, salt, function(err, hash) {
       if (err) return next(err);
-      user.local.password = hash;
+      user.password = hash;
       next();
     });
   });
 });
 
 UserSchema.methods.comparePassword = function(password, fn) {
-  bcrypt.compare(password, this.local.password, function(err, isMatch) {
+  bcrypt.compare(password, this.password, function(err, isMatch) {
     if (err) return fn(err);
     fn(null, isMatch);
   });
