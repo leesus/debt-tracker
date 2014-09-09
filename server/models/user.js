@@ -19,8 +19,11 @@ var UserSchema = new Schema({
   created: { type: Date, 'default': Date.now },
   activated: { type: Boolean, 'default': false },
 
-  payments: [{ type: Schema.Types.ObjectId, ref: 'Payment' }],
-  debts: [{ type: Schema.Types.ObjectId, ref: 'Debt' }]
+  paid: [{ type: Schema.Types.ObjectId, ref: 'Payment' }],
+  owes: [{ type: Schema.Types.ObjectId, ref: 'Debt' }],
+
+  repaid: [{ type: Schema.Types.ObjectId, ref: 'Payment' }],
+  owed: [{ type: Schema.Types.ObjectId, ref: 'Debt' }]
 });
 
 UserSchema.pre('save', function(next) {
