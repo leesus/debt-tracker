@@ -1,3 +1,5 @@
+'use strict';
+
 var mongoose = require('mongoose');
 var bcrypt = require('bcrypt');
 
@@ -47,5 +49,14 @@ UserSchema.methods.comparePassword = function(password, fn) {
     fn(null, isMatch);
   });
 };
+
+UserSchema.virtual('name').get(function(){
+  return this.firstName + ' ' + this.lastName;
+});
+
+UserSchema.virtual('name').set(function(name){
+  this.firstName = name.split(' ')[0];
+  this.lastName = name.split(' ')[1];
+});
 
 module.exports = mongoose.model('User', UserSchema);

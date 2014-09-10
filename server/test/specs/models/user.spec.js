@@ -1,17 +1,14 @@
-if (process.env.NODE_ENV !== 'test' ) {
-  console.log('Setting NODE_ENV=test.');
-  process.env.NODE_ENV = 'test';
-}
+'use strict';
 
 var mocha = require('mocha');
 var supertest = require('supertest');
 var should = require('should');
 var sinon = require('sinon');
+var utils = require('../../utils');
 
 var mongoose = require('mongoose');
 var bcrypt = require('bcrypt');
 
-var config = require('../../../config/secrets')[process.env.NODE_ENV];
 var Debt = require('../../../models/debt');
 var Payment = require('../../../models/payment');
 var User = require('../../../models/user');
@@ -22,50 +19,32 @@ var isArray = Array.isArray || function(o) {
 
 describe('User model', function() {
 
-  before(function(done) {
-    if (mongoose.connection.db) {
-      return done();
-    }
-
-    mongoose.connect(config.db, done);    
-  });
-
-  after(function(done) {
-    mongoose.connection.db.dropDatabase(function(){
-      mongoose.connection.close(done);
-    });
-  });
-
   beforeEach(function(done) {
     var _this = this;
 
-    mongoose.connection.db.dropDatabase(function(err){
-      if (err) return done(err);
+    _this.owed = new Debt;
+    _this.owes = new Debt;
+    _this.repaid = new Payment;
+    _this.paid = new Payment;
+    
+    _this.user = new User({
+      firstName: 'Lee',
+      lastName: 'Ellam',
+      displayName: 'Leesus',
+      email: ['test@test.com'],
+      password: 'test',
+      facebook: {
+        id: '12345',
+        token: 'abc123'
+      },
+      owes: [_this.owes],
+      paid: [_this.paid],
+      owed: [_this.owed],
+      repaid: [_this.repaid]
+    });
 
-      _this.owed = new Debt;
-      _this.owes = new Debt;
-      _this.repaid = new Payment;
-      _this.paid = new Payment;
-      
-      _this.user = new User({
-        firstName: 'Lee',
-        lastName: 'Ellam',
-        displayName: 'Lee Ellam',
-        email: ['test@test.com'],
-        password: 'test',
-        facebook: {
-          id: '12345',
-          token: 'abc123'
-        },
-        owes: [_this.owes],
-        paid: [_this.paid],
-        owed: [_this.owed],
-        repaid: [_this.repaid]
-      });
-
-      _this.user.save(function(){
-        done();
-      });
+    _this.user.save(function(){
+      done();
     });
   });
 
@@ -78,7 +57,15 @@ describe('User model', function() {
   });
 
   it('should have a displayName property', function() {
-    this.user.displayName.should.equal('Lee Ellam');
+    this.user.displayName.should.equal('Leesus');
+  });
+
+  it('should have a virtual name getter/setter', function() {
+    this.user.name.should.equal('Lee Ellam');
+    this.user.name = 'Mr McEllam';
+    this.user.firstName.should.equal('Mr');
+    this.user.lastName.should.equal('McEllam');
+    this.user.name = 'Lee Ellam';
   });
 
   it('should have an activated property', function() {
