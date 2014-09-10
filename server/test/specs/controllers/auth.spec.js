@@ -1,46 +1,20 @@
-if (process.env.NODE_ENV !== 'test' ) {
-  console.log('Setting NODE_ENV=test.');
-  process.env.NODE_ENV = 'test';
-}
+'use strict';
 
 var mocha = require('mocha');
 var supertest = require('supertest');
 var app = require('../../../index');
 var should = require('should');
 var sinon = require('sinon');
+var utils = require('../../utils');
 
 var mongoose = require('mongoose');
 var passport = require('../../../config/passport');
-var config = require('../../../config/secrets')[process.env.NODE_ENV];
 var auth = require('../../../controllers/auth')
 var User = require('../../../models/user');
 
 describe('Auth controller', function() {
 
-  /*before(function(done) {
-
-    if (mongoose.connection.db) {
-      return done();
-    }
-
-    mongoose.connect(config.db, done);
-  });
-
-  after(function(done) {
-    mongoose.connection.db.dropDatabase(function(){
-      mongoose.connection.close(done);
-      //process.env.NODE_ENV = 'development';
-    });
-  });
-
-  beforeEach(function(done) {
-    if (mongoose.connection.db) {
-      mongoose.connection.db.dropDatabase(function(err){
-        if (err) return done(err);
-        mongoose.connection.close(done);
-      });
-    }
-  });*/
+  var agent = supertest.agent(app);
 
   it('should have a login method', function() {
     auth.login.should.exist;
@@ -58,11 +32,61 @@ describe('Auth controller', function() {
   });
 
   describe('when signing up a user', function() {
-    //var agent = supertest.agent(app);
-    //agent
-    //  .post(...)
-    //  .send(...)
-    //  .expect(...)
-    //  .end(...);
+
+    it('should return a 403 response with an object containing success, message and errors properties when email or password are invalid', function(done) {
+      agent
+        .post('/api/auth/signup')
+        .send({ email: 'blah', password: '123' })
+        .expect(403)
+        .expect(function(res) {
+          res.body.success.should.be.false;
+          res.body.message.should.equal('Signup failed.');
+          res.body.errors[0].msg.should.equal('Email is not valid.');
+          res.body.errors[1].msg.should.equal('Password must be at least 6 characters long.');
+        })
+        .end(done);
+    });
+
+    it('should authenticate with passport local strategy');
+
+    it('should return a 409 response with an object containing success and message properties if passport authentication fails');
+
+    it('should call req.logIn and log in the user if created successfully');
+
+    it('should set a \'user\' cookie');
+
+    it('should send a 201 response with an object containing success, message and data properties');
+  });
+
+  describe('when logging in a user', function() {
+    /*agent
+      .post(...)
+      .send(...)
+      .expect(...)
+      .end(...);*/
+
+    it('should return a 401 response with an object containing success, message and errors properties when email or password are invalid');
+
+    it('should authenticate with passport local strategy');
+
+    it('should return a 401 response with an object containing success and message properties if passport authentication fails');
+
+    it('should call req.logIn and log in the user if created successfully');
+
+    it('should set a \'user\' cookie');
+
+    it('should send a 201 response with an object containing success, message and data properties');
+  });
+
+  describe('when logging out a user', function() {
+    /*agent
+      .post(...)
+      .send(...)
+      .expect(...)
+      .end(...);*/
+
+    it('should call req.logout');
+
+    it('should send a 200 response with an object containing success and message properties');
   });
 });

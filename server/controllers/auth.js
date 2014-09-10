@@ -31,23 +31,23 @@ module.exports.signup = function(req, res, next) {
   var errors = req.validationErrors();
 
   if (errors) {
-    return res.status(403).send({ success: false, message: 'Signup failed.', errors: errors });
+    return res.send(403, { success: false, message: 'Signup failed.', errors: errors });
   }
 
   passport.authenticate('local-signup', function(err, user, info) {
     if (err) return next(err);
-    if (!user) res.status(409).send({ success: false, message: info && info.message || 'There was an error creating your account.' });
+    if (!user) res.send(409, { success: false, message: info && info.message || 'There was an error creating your account.' });
 
     req.logIn(user, function(err) {
       if (err) return console.error(err) && next(err);
       res.cookie('user', JSON.stringify(req.user));
-      res.send({ success: true, message: info && info.message || 'Account created successfully', data: user });
+      res.send(201, { success: true, message: info && info.message || 'Account created successfully', data: user });
     });
   })(req, res, next);
 };
 
 module.exports.logout = function(req, res, next) {
   req.logout();
-  res.send({ success: true, message: 'Logout successful' });
+  res.send(200, { success: true, message: 'Logout successful' });
 };
 
