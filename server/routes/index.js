@@ -3,7 +3,8 @@ var passport = require('passport');
 
 // Controllers
 var controllers = {
-  auth: require('../controllers/auth')
+  auth: require('../controllers/auth'),
+  user: require('../controllers/user')
 };
 
 // Middleware
@@ -23,6 +24,7 @@ router
   .get('/auth/failure', function(req, res) {
     res.render('after-auth.ejs', { state: 'failure', user: null });
   });
+  // User routes - profile
 
 // Export routes
 module.exports = router;
