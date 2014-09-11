@@ -130,9 +130,9 @@ passport.use(new FacebookStrategy(secrets.facebook, function(req, token, refresh
 
         if (user) {
           if (!user.facebook.token) {
-            user.firstName = user.firstName || profile.name.givenName;
-            user.lastName = user.lastName || profile.name.familyName;
-            user.displayName = user.displayName || profile.displayName || user.firstName + ' ' + user.lastName;
+            user.first_name = user.first_name || profile.name.givenName;
+            user.last_name = user.last_name || profile.name.familyName;
+            user.display_name = user.display_name || profile.displayName || user.name;
             user.facebook.token = token;
             user.facebook.id = profile.id;
             if (!user.email.indexOf(email) === -1) user.email.push(email);
@@ -148,9 +148,9 @@ passport.use(new FacebookStrategy(secrets.facebook, function(req, token, refresh
           
           newUser.facebook.token = token;
           newUser.facebook.id = profile.id;
-          newUser.firstName = profile.name.givenName;
-          newUser.lastName = profile.name.familyName;
-          newUser.displayName = newUser.displayName || profile.displayName || newUser.firstName + ' ' + newUser.lastName;
+          newUser.first_name = profile.name.givenName;
+          newUser.last_name = profile.name.familyName;
+          newUser.display_name = newUser.display_name || profile.displayName || newUser.name;
           newUser.email.push(email);
 
           newUser.save(function(err) {
@@ -164,9 +164,9 @@ passport.use(new FacebookStrategy(secrets.facebook, function(req, token, refresh
           
       user.facebook.token = token;
       user.facebook.id = profile.id;
-      user.firstName = user.firstName || profile.name.givenName;
-      user.lastName = user.lastName || profile.name.familyName;
-      user.displayName = user.displayName || profile.displayName || user.firstName + ' ' + user.lastName;
+      user.first_name = user.first_name || profile.name.givenName;
+      user.last_name = user.last_name || profile.name.familyName;
+      user.display_name = user.display_name || profile.displayName || user.name;
       if (user.email.indexOf(email) === -1) user.email.push(email);
 
       user.save(function(err) {

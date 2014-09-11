@@ -6,11 +6,11 @@ var bcrypt = require('bcrypt');
 var Schema = mongoose.Schema;
 
 var UserSchema = new Schema({
-  firstName: String,
-  lastName: String,
-  displayName: String,
+  first_name: String,
+  last_name: String,
+  display_name: String,
 
-  email: [String],
+  email: [{ type: String, required: true }],
   password: String,
 
   facebook: {
@@ -51,12 +51,12 @@ UserSchema.methods.comparePassword = function(password, fn) {
 };
 
 UserSchema.virtual('name').get(function(){
-  return this.firstName + ' ' + this.lastName;
+  return this.first_name + ' ' + this.last_name;
 });
 
 UserSchema.virtual('name').set(function(name){
-  this.firstName = name.split(' ')[0];
-  this.lastName = name.split(' ')[1];
+  this.first_name = name.split(' ')[0];
+  this.last_name = name.split(' ')[1];
 });
 
 module.exports = mongoose.model('User', UserSchema);

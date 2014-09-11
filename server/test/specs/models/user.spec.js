@@ -28,9 +28,10 @@ describe('User model', function() {
     _this.paid = new Payment;
     
     _this.user = new User({
-      firstName: 'Lee',
-      lastName: 'Ellam',
-      displayName: 'Leesus',
+      //first_name: 'Lee',
+      //last_name: 'Ellam',
+      name: 'Lee Ellam',
+      display_name: 'Leesus',
       email: ['test@test.com'],
       password: 'test',
       facebook: {
@@ -48,23 +49,23 @@ describe('User model', function() {
     });
   });
 
-  it('should have a firstName property', function() {
-    this.user.firstName.should.equal('Lee');
+  it('should have a first_name property', function() {
+    this.user.first_name.should.equal('Lee');
   });
 
-  it('should have a lastName property', function() {
-    this.user.lastName.should.equal('Ellam');
+  it('should have a last_name property', function() {
+    this.user.last_name.should.equal('Ellam');
   });
 
-  it('should have a displayName property', function() {
-    this.user.displayName.should.equal('Leesus');
+  it('should have a display_name property', function() {
+    this.user.display_name.should.equal('Leesus');
   });
 
   it('should have a virtual name getter/setter', function() {
     this.user.name.should.equal('Lee Ellam');
     this.user.name = 'Mr McEllam';
-    this.user.firstName.should.equal('Mr');
-    this.user.lastName.should.equal('McEllam');
+    this.user.first_name.should.equal('Mr');
+    this.user.last_name.should.equal('McEllam');
     this.user.name = 'Lee Ellam';
   });
 
