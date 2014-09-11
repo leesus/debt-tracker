@@ -67,7 +67,7 @@ passport.use('local-signup', new LocalStrategy({
         if (signedOutUser) {
           if (signedOutUser.password) {
             // If user has a password, we can assume that it's an existing account.
-            return done(null, false, { message: 'That email is already taken.' });
+            return done(null, false, { message: 'That email address is taken.' });
           } else {
             // Otherwise, it's an oauth account, add the password
             signedOutUser.password = password;

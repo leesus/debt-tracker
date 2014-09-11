@@ -14,12 +14,12 @@ module.exports.login = function(req, res, next) {
 
   passport.authenticate('local-login', function(err, user, info) {
     if (err) return console.error(err) && next(err);
-    if (!user) res.status(401).send({ success: false, message: info.message });
+    if (!user) return res.status(401).send({ success: false, message: info.message });
 
     req.logIn(user, function(err) {
       if (err) return console.error(err) && next(err);
       res.cookie('user', JSON.stringify(req.user));
-      res.send({ success: true, message: info.message, data: user });
+      return res.send({ success: true, message: info.message, data: user });
     });
   })(req, res, next);
 };
@@ -36,18 +36,18 @@ module.exports.signup = function(req, res, next) {
 
   passport.authenticate('local-signup', function(err, user, info) {
     if (err) return next(err);
-    if (!user) res.send(409, { success: false, message: info && info.message || 'There was an error creating your account.' });
+    if (!user) return res.send(409, { success: false, message: info && info.message || 'There was an error creating your account.' });
 
     req.logIn(user, function(err) {
       if (err) return console.error(err) && next(err);
       res.cookie('user', JSON.stringify(req.user));
-      res.send(201, { success: true, message: info && info.message || 'Account created successfully', data: user });
+      return res.send(201, { success: true, message: info && info.message || 'Account created successfully.', data: user });
     });
   })(req, res, next);
 };
 
 module.exports.logout = function(req, res, next) {
   req.logout();
-  res.send(200, { success: true, message: 'Logout successful' });
+  return res.send(200, { success: true, message: 'Logout successful.' });
 };
 

@@ -6,15 +6,17 @@ var app = require('../../../index');
 var should = require('should');
 var sinon = require('sinon');
 var utils = require('../../utils');
+var passport = require('passport');
+var http = require('http');
 
 var mongoose = require('mongoose');
-var passport = require('../../../config/passport');
+var passportConfig = require('../../../config/passport');
 var auth = require('../../../controllers/auth')
 var User = require('../../../models/user');
 
-describe('Auth controller', function() {
+var agent = supertest.agent(app);
 
-  var agent = supertest.agent(app);
+describe('Auth controller', function() {
 
   it('should have a login method', function() {
     auth.login.should.exist;
@@ -47,46 +49,185 @@ describe('Auth controller', function() {
         .end(done);
     });
 
-    it('should authenticate with passport local strategy');
+    it('should authenticate with passport local strategy', function(done) {
+      var passportSpy = sinon.spy(passport, 'authenticate');
 
-    it('should return a 409 response with an object containing success and message properties if passport authentication fails');
+      agent.post('/api/auth/signup')
+        .send({ email: 'testuser1@test.com', password: 'password' })
+        .end(function(){
+          passportSpy.called.should.be.true;
+          passportSpy.restore();
+          done();
+        });
+    });
 
-    it('should call req.logIn and log in the user if created successfully');
+    it('should return a 409 response with an object containing success and message properties if passport authentication fails', function(done) {
+      var user = new User({ email: ['alreadysignedup@test.com'], password: '123456' });
+      user.save(function() {
+        agent.post('/api/auth/signup')
+          .send({ email: 'alreadysignedup@test.com', password: 'blahblah' })
+          .expect(409)
+          .expect(function(res) {
+            res.body.success.should.be.false;
+            res.body.message.should.equal('That email address is taken.');
+          })
+          .end(done);
+      });
+    });
 
-    it('should set a \'user\' cookie');
+    it('should call req.logIn and log in the user if created successfully', function(done) {
+      var reqSpy = sinon.spy(http.IncomingMessage.prototype, 'logIn');
 
-    it('should send a 201 response with an object containing success, message and data properties');
+      agent
+        .post('/api/auth/signup')
+        .send({ email: 'testuser1@test.com', password: 'password' })
+        .expect(function() {
+          reqSpy.called.should.be.true;
+          reqSpy.restore();
+        })
+        .end(done);
+    });
+
+    it('should set a \'user\' cookie', function(done) {
+      agent
+        .post('/api/auth/signup')
+        .send({ email: 'testuser2@test.com', password: 'password' })
+        .expect(function(res) {
+          res.headers['set-cookie'].should.be.ok;
+          res.headers['set-cookie'][0].indexOf('user').should.not.equal(-1);
+        })
+        .end(done);
+    });
+
+    it('should send a 201 response with an object containing success, message and data properties', function(done) {
+      agent
+        .post('/api/auth/signup')
+        .send({ email: 'testuser3@test.com', password: 'password' })
+        .expect(201)
+        .expect(function(res) {
+          res.body.success.should.be.true;
+          res.body.message.should.equal('Account created successfully.');
+          res.body.data.should.be.ok;
+          res.body.data.email[0].should.equal('testuser3@test.com');
+          res.body.data.password.should.not.equal(undefined);
+        })
+        .end(done);
+    });
   });
 
   describe('when logging in a user', function() {
-    /*agent
-      .post(...)
-      .send(...)
-      .expect(...)
-      .end(...);*/
+    beforeEach(function(done) {
+      var user = new User({ email: ['alreadysignedup@test.com'], password: '123456' });
+      user.save(done);
+    });
 
-    it('should return a 401 response with an object containing success, message and errors properties when email or password are invalid');
+    it('should return a 401 response with an object containing success, message and errors properties when email or password are invalid', function(done) {
+      agent
+        .post('/api/auth/login')
+        .send({ email: 'blah' })
+        .expect(401)
+        .expect(function(res) {
+          res.body.success.should.be.false;
+          res.body.message.should.equal('Login failed.');
+          res.body.errors[0].msg.should.equal('Email is not valid.');
+          res.body.errors[1].msg.should.equal('Password cannot be blank.');
+        })
+        .end(done);
+    });
 
-    it('should authenticate with passport local strategy');
+    it('should authenticate with passport local strategy', function(done) {
+      var passportSpy = sinon.spy(passport, 'authenticate');
 
-    it('should return a 401 response with an object containing success and message properties if passport authentication fails');
+      agent.post('/api/auth/login')
+        .send({ email: 'alreadysignedup@test.com', password: '123456' })
+        .end(function(){
+          passportSpy.called.should.be.true;
+          passportSpy.restore();
+          done();
+        });
+    });
 
-    it('should call req.logIn and log in the user if created successfully');
+    it('should return a 401 response with an object containing success and message properties if passport authentication fails', function(done) {
+      agent.post('/api/auth/login')
+        .send({ email: 'notalreadysignedup@test.com', password: 'blahblah' })
+        .expect(401)
+        .expect(function(res) {
+          res.body.success.should.be.false;
+          res.body.message.should.equal('No user found.');
+        })
+        .end(done);
+    });
 
-    it('should set a \'user\' cookie');
+    it('should call req.logIn and log in the user if created successfully', function(done) {
+      var reqSpy = sinon.spy(http.IncomingMessage.prototype, 'logIn');
 
-    it('should send a 201 response with an object containing success, message and data properties');
+      agent
+        .post('/api/auth/login')
+        .send({ email: 'alreadysignedup@test.com', password: '123456' })
+        .expect(function() {
+          reqSpy.called.should.be.true;
+          reqSpy.restore();
+        })
+        .end(done);
+    });
+
+    it('should set a \'user\' cookie', function(done) {
+      agent
+        .post('/api/auth/login')
+        .send({ email: 'alreadysignedup@test.com', password: '123456' })
+        .expect(function(res) {
+          res.headers['set-cookie'].should.be.ok;
+          res.headers['set-cookie'][0].indexOf('user').should.not.equal(-1);
+        })
+        .end(done);
+    });
+
+    it('should send a 200 response with an object containing success, message and data properties', function(done) {
+      agent
+        .post('/api/auth/login')
+        .send({ email: 'alreadysignedup@test.com', password: '123456' })
+        .expect(200)
+        .expect(function(res) {
+          res.body.success.should.be.true;
+          res.body.message.should.equal('Login successful.');
+          res.body.data.should.be.ok;
+          res.body.data.email[0].should.equal('alreadysignedup@test.com');
+          res.body.data.password.should.not.equal(undefined);
+        })
+        .end(done);
+    });
   });
 
   describe('when logging out a user', function() {
-    /*agent
-      .post(...)
-      .send(...)
-      .expect(...)
-      .end(...);*/
 
-    it('should call req.logout');
+    beforeEach(function(done) {
+      agent
+        .post('/api/auth/signup')
+        .send({ email: 'alreadysignedup@test.com', password: 'password' })
+        .end(done);
+    });
 
-    it('should send a 200 response with an object containing success and message properties');
+    it('should call req.logout', function(done) {
+      var reqSpy = sinon.spy(http.IncomingMessage.prototype, 'logout');
+
+      agent
+        .get('/api/auth/logout')
+        .expect(function() {
+          reqSpy.called.should.be.true;
+          reqSpy.restore();
+        })
+        .end(done);
+    });
+
+    it('should send a 200 response with an object containing success and message properties', function(done) {
+      agent
+        .get('/api/auth/logout')
+        .expect(200)
+        .expect(function(res) {
+          res.body.success.should.be.true;
+          res.body.message.should.equal('Logout successful.')
+        })
+        .end(done);
+    });
   });
 });
