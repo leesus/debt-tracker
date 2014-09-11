@@ -89,8 +89,8 @@ describe('User model', function() {
     this.user.facebook.token.should.equal('abc123');
   });
 
-  it('should have a non-null created property', function() {
-    this.user.created.should.not.equal(null);
+  it('should have a non-null created_date property', function() {
+    this.user.created_date.should.not.equal(null);
   });
 
   it('should have an owes array property', function() {

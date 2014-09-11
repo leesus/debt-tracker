@@ -18,7 +18,7 @@ var UserSchema = new Schema({
     token: String
   },
 
-  created: { type: Date, 'default': Date.now },
+  created_date: { type: Date, 'default': Date.now },
   activated: { type: Boolean, 'default': false },
 
   paid: [{ type: Schema.Types.ObjectId, ref: 'Payment' }],

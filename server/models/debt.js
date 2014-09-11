@@ -3,12 +3,29 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
 var DebtSchema = new Schema({
-  // Maps to user._id
-  _owner: { type: Schema.Types.ObjectId, ref: 'User' },
+  // User debt owed to, maps to user._id
+  creditor: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  
+  // User debt owed by, maps to user._id
+  debtor: { type: Schema.Types.ObjectId, ref: 'User', required: true },
 
-  created: { type: Date, 'default': Date.now },
+  // Date of debt (actual date debt is owed)
+  date: { type: Date, required: true },
 
-  date: { type: Date, required: true }
+  // Bill reference (e.g. 'Phone bill')
+  reference: { type: String, required: true },
+
+  // Bill amount
+  amount: { type: Number, required: true },
+
+  // Debt active or not
+  archived: { type: Boolean, 'default': false },
+
+  // Created date
+  created_date: { type: Date, 'default': Date.now },
+
+  // Updated date
+  updated_date: { type: Date, 'default': Date.now }
 });
 
 module.exports = mongoose.model('Debt', DebtSchema);

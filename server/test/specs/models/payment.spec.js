@@ -8,12 +8,10 @@ var utils = require('../../utils');
 var mongoose = require('mongoose');
 var bcrypt = require('bcrypt');
 
-var Debt = require('../../../models/debt');
+var Payment = require('../../../models/payment');
 var User = require('../../../models/user');
 
-var date = new Date(2014, 9, 10);
-
-describe('Debt model', function() {
+describe('Payment model', function() {
 
   beforeEach(function(done) {
     var _this = this;
@@ -28,15 +26,14 @@ describe('Debt model', function() {
 
     _this.creditor.save(function() {
       _this.debtor.save(function() {
-        _this.debt = new Debt({
-          date: date,
-          reference: 'Phone bill',
-          amount: 43.66,
+        _this.payment = new Payment({
+          reference: 'September bills',
+          amount: 325.26,
           debtor: _this.debtor._id,
           creditor: _this.creditor._id
         });
 
-        _this.debt.save(function() {
+        _this.payment.save(function() {
           done();
         });
       });
@@ -44,34 +41,30 @@ describe('Debt model', function() {
   });
 
   it('should have a non-null created_date property', function() {
-    this.debt.created_date.should.not.equal(null);
+    this.payment.created_date.should.not.equal(null);
   });
 
   it('should have a non-null updated_date property', function() {
-    this.debt.updated_date.should.not.equal(null);
-  });
-
-  it('should have a date property', function() {
-    this.debt.date.should.equal(date);
+    this.payment.updated_date.should.not.equal(null);
   });
 
   it('should have a reference property', function() {
-    this.debt.reference.should.equal('Phone bill');
+    this.payment.reference.should.equal('September bills');
   });
 
   it('should have an amount property', function() {
-    this.debt.amount.should.equal(43.66);
+    this.payment.amount.should.equal(325.26);
   });
 
   it('should have a debtor property', function() {
-    this.debt.debtor.should.equal(this.debtor._id);
+    this.payment.debtor.should.equal(this.debtor._id);
   });
 
   it('should have a creditor property', function() {
-    this.debt.creditor.should.equal(this.creditor._id);
+    this.payment.creditor.should.equal(this.creditor._id);
   });
 
-  it('should have an archived property', function() {
-    this.debt.archived.should.be.false;
+  it('should have a confirmed property', function() {
+    this.payment.confirmed.should.be.false;
   });
 });
