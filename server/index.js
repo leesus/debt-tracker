@@ -1,3 +1,5 @@
+'use strict';
+
 var express = require('express');
 var path = require('path');
 var favicon = require('static-favicon');
@@ -92,24 +94,11 @@ app.use(function(req, res, next) {
 });
 
 // Error handlers
-// development error handler
-// will print stacktrace
-if (app.get('env') === 'development') {
-    app.use(function(err, req, res, next) {
-        res.status(err.status || 500);
-        res.send({
-            message: err.message,
-            error: err
-        });
-    });
-}
-// production error handler
-// no stacktraces leaked to user
+// Stacktraces passed
 app.use(function(err, req, res, next) {
-    res.status(err.status || 500);
-    res.send({
+    res.send(err.status || 500, {
         message: err.message,
-        error: {}
+        error: err
     });
 });
 

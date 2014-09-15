@@ -1,3 +1,5 @@
+'use strict';
+
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
 var FacebookStrategy = require('passport-facebook').Strategy;
@@ -177,14 +179,14 @@ passport.use(new FacebookStrategy(secrets.facebook, function(req, token, refresh
   });
 }));
 
-// Middlewares
-exports.isAuthenticated = function(req, res, next) {
+// Middleware
+module.exports.isAuthenticated = function(req, res, next) {
   if (req.isAuthenticated()) return next();
   res.status(401);
   next();
 };
 
-exports.isAuthorized = function(req, res, next) {
+module.exports.isAuthorized = function(req, res, next) {
   var provider = req.path.split('/').slice(-1)[0];
 
   if (_.find(req.user.tokens, { kind: provider })) {

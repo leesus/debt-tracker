@@ -1,3 +1,5 @@
+'use strict';
+
 var mongoose = require('mongoose');
 
 var Schema = mongoose.Schema;
@@ -27,5 +29,9 @@ var DebtSchema = new Schema({
   // Updated date
   updated_date: { type: Date, 'default': Date.now }
 });
+
+DebtSchema.statics.findAllOwedTo = function(name, fn) {
+  return this.find({ creditor: findAllOwedTo }, fn);
+};
 
 module.exports = mongoose.model('Debt', DebtSchema);
