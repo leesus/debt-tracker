@@ -34,4 +34,9 @@ DebtSchema.statics.findAllOwedTo = function(name, fn) {
   return this.find({ creditor: findAllOwedTo }, fn);
 };
 
+DebtSchema.pre('save', function(next) {
+  this.updated_date = Date.now();
+  next();
+});
+
 module.exports = mongoose.model('Debt', DebtSchema);

@@ -74,4 +74,22 @@ describe('Debt model', function() {
   it('should have an archived property', function() {
     this.debt.archived.should.be.false;
   });
+
+  describe('when saving', function() {
+
+    it('should update the update_date property', function(done) {
+      var _this = this;
+      var oldDate = this.debt.updated_date;
+
+      this.debt.amount.should.equal(43.66);
+      this.debt.updated_date.should.equal(oldDate);
+
+      this.debt.amount = 51.97;
+      this.debt.save(function(){
+        _this.debt.amount.should.equal(51.97);
+        _this.debt.updated_date.should.not.equal(oldDate);
+        done();
+      });
+    });
+  });
 });

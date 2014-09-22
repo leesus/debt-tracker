@@ -5,6 +5,7 @@ var LocalStrategy = require('passport-local').Strategy;
 var FacebookStrategy = require('passport-facebook').Strategy;
 var User = require('../models/user');
 var secrets = require('./secrets')[process.env.NODE_ENV || 'development'];
+var mongoose = require('mongoose')
 
 // Session de/serialize
 passport.serializeUser(function(user, done) {
@@ -25,7 +26,7 @@ passport.use('local-login', new LocalStrategy({
 }, function(req, email, password, done) {
   if (email) email = email.toLowerCase();
 
-  process.nextTick(function() {
+  process.nextTick(function() {    
     User.findOne({ 'email': email }, function(err, user) {
       if (err) return done(err);
       if (!user) return done(null, false, { message: 'No user found.' });
@@ -183,7 +184,7 @@ passport.use(new FacebookStrategy(secrets.facebook, function(req, token, refresh
 module.exports.isAuthenticated = function(req, res, next) {
   if (req.isAuthenticated()) return next();
   res.status(401);
-  next();
+  return next(new Error('Unauthorized request.'));
 };
 
 module.exports.isAuthorized = function(req, res, next) {

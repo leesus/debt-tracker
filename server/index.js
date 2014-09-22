@@ -96,9 +96,10 @@ app.use(function(req, res, next) {
 // Error handlers
 // Stacktraces passed
 app.use(function(err, req, res, next) {
-    res.send(err.status || 500, {
+    res.send(err.status || res.statusCode || 500, {
+        success: false,
         message: err.message,
-        error: err
+        errors: err.errors || err
     });
 });
 

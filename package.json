@@ -23,7 +23,8 @@
     "passport": "~0.2.0",
     "ejs": "~1.0.0",
     "express-validator": "~2.3.0",
-    "connect-mongo": "~0.4.1"
+    "connect-mongo": "~0.4.1",
+    "underscore": "~1.7.0"
   },
   "devDependencies": {
     "should": "~4.0.4",

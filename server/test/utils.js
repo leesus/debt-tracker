@@ -1,12 +1,7 @@
 'use strict';
 
-if (process.env.NODE_ENV !== 'test' ) {
-  var env = process.env.NODE_ENV;
-  process.env.NODE_ENV = 'test';
-}
-
 // http://www.scotchmedia.com/tutorials/express/authentication/1/06
-var config = require('../config/secrets')[process.env.NODE_ENV];
+var config = require('../config/secrets').test;
 var mongoose = require('mongoose');
 
 
@@ -32,7 +27,5 @@ beforeEach(function (done) {
 afterEach(function (done) {
  mongoose.disconnect();
 
- // Reset environment
- if (env) process.env.NODE_ENV = env;
  return done();
 });

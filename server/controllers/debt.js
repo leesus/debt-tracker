@@ -1,5 +1,6 @@
 'use strict';
 
+var _ = require('underscore');
 var Debt = require('../models/debt');
 
 module.exports.addDebt = function(req, res, next) {
@@ -10,7 +11,10 @@ module.exports.addDebt = function(req, res, next) {
     reference: req.body.reference,
     amount: req.body.amount
   }, function(err, debt) {
-    if (err) return next(err);
+    if (err) {
+      res.status(403);
+      return next(err);
+    }
     return res.send(201, { success: true, message: 'Debt created successfully.', data: debt });
   });
 };
@@ -42,10 +46,24 @@ module.exports.getDebt = function(req, res, next) {
 };
 
 module.exports.updateDebt = function(req, res, next) {
-  var id = req.params.id;
-  Debt.update(id, function(err) {
+  Debt.findById(req.params.id, function(err, debt) {
+    console.log(err)
+    console.log(debt)
     if (err) return next(err);
-    return res.send(200, { success: true, message: 'Debt updated successfully.' });
+
+    _.each(req.body, function(value, key) {
+      if (debt.hasOwnProperty(key)) {
+        debt[key] = value;
+      }
+    });
+
+    debt.save(function(err) {
+      if (err) {
+        res.status(403);
+        return next(err);
+      }
+      return res.send(200, { success: true, message: 'Debt updated successfully.' });
+    });
   });
 };
 
