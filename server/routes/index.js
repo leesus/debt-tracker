@@ -8,7 +8,8 @@ var passportConfig = require('../config/passport');
 var controllers = {
   auth: require('../controllers/auth'),
   user: require('../controllers/user'),
-  debt: require('../controllers/debt')
+  debt: require('../controllers/debt'),
+  payment: require('../controllers/payment')
 };
 
 // Middleware
@@ -35,7 +36,14 @@ router
   .get('/debts/owed', isAuthenticated, controllers.debt.getDebtsOwedToUser)
   .get('/debts/owes', isAuthenticated, controllers.debt.getDebtsOwedByUser)
   .get('/debts/:id', isAuthenticated, controllers.debt.getDebt)
-  .delete('/debts/:id', isAuthenticated, controllers.debt.removeDebt);
+  .delete('/debts/:id', isAuthenticated, controllers.debt.removeDebt)
+  // Payment routes
+  .post('/payments', isAuthenticated, controllers.payment.addPayment)
+  .put('/payments/:id', isAuthenticated, controllers.payment.updatePayment)
+  .get('/payments/owed', isAuthenticated, controllers.payment.getPaymentsToUser)
+  .get('/payments/owes', isAuthenticated, controllers.payment.getPaymentsByUser)
+  .get('/payments/:id', isAuthenticated, controllers.payment.getPayment)
+  .delete('/payments/:id', isAuthenticated, controllers.payment.removePayment)
 
 // Export routes
 module.exports = router;
