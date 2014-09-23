@@ -157,5 +157,211 @@ describe('Debt controller', function() {
           .end(done);
       });
     });
+
+    it('should send a 200 response with an object containing success, message and data properties', function(done) {
+      var date = Date.now();
+      var debtorId = new ObjectId();
+
+      var debt = new Debt({
+        debtor: new ObjectId,
+        creditor: new ObjectId,
+        date: date,
+        reference: 'Test debt',
+        amount: 1
+      });
+      var user = new User({ email: ['user@test.com'], password: '123456' });
+
+      debt.save(function(err, debt) {
+        if (err) done(err);
+
+        user.save(function(err, user) {
+          if (err) done(err);
+          
+          agent
+            .post('/api/auth/login')
+            .send({ email: 'user@test.com', password: '123456' })
+            .end(function(err, res){
+              agent
+                .put('/api/debts/' + debt._id)
+                .send({ amount: 42.56 })
+                .expect(200)
+                .expect(function(res) {
+                  res.body.success.should.be.true;
+                  res.body.message.should.equal('Debt updated successfully.');
+                  res.body.data.should.be.ok;
+                  
+                  (new Date(res.body.data.updated_date).getTime()).should.not.equal(date);
+                  res.body.data.amount.should.equal(42.56);
+                })
+                .end(done);
+            });
+        });
+      });
+    });
+  });
+
+  describe('when removing a debt', function() {
+    
+    beforeEach(function(done) {
+      agent
+        .get('/api/auth/logout')
+        .end(done);
+    });
+
+    it('should return a 401 response with an object containing success, message and error properties if user not authenticated', function(done) {
+      var debt = new Debt({
+        debtor: new ObjectId,
+        creditor: new ObjectId,
+        date: Date.now(),
+        reference: 'Test debt',
+        amount: 1
+      });
+
+      debt.save(function (err, debt) {
+        agent
+          .delete('/api/debts/' + debt._id)
+          .send()
+          .expect(401)
+          .expect(function(res) {
+            res.body.success.should.be.false;
+            res.body.message.should.equal('Unauthorized request.');
+            res.body.errors.should.be.ok;
+          })
+          .end(done);
+      });
+    });
+
+    it('should send a 200 response with an object containing success and message properties', function(done) {
+      var date = Date.now();
+      var debtorId = new ObjectId();
+
+      var debt = new Debt({
+        debtor: new ObjectId,
+        creditor: new ObjectId,
+        date: date,
+        reference: 'Test debt',
+        amount: 1
+      });
+      var user = new User({ email: ['user@test.com'], password: '123456' });
+
+      debt.save(function(err, debt) {
+        if (err) done(err);
+
+        user.save(function(err, user) {
+          if (err) done(err);
+          
+          agent
+            .post('/api/auth/login')
+            .send({ email: 'user@test.com', password: '123456' })
+            .end(function(err, res){
+              agent
+                .delete('/api/debts/' + debt._id)
+                .send()
+                .expect(200)
+                .expect(function(res) {
+                  res.body.success.should.be.true;
+                  res.body.message.should.equal('Debt removed successfully.');
+                })
+                .end(done);
+            });
+        });
+      });
+    });
+  });
+
+  describe('when retrieving a debt', function() {
+    
+    beforeEach(function(done) {
+      agent
+        .get('/api/auth/logout')
+        .end(done);
+    });
+
+    it('should return a 401 response with an object containing success, message and error properties if user not authenticated', function(done) {
+      var debt = new Debt({
+        debtor: new ObjectId,
+        creditor: new ObjectId,
+        date: Date.now(),
+        reference: 'Test debt',
+        amount: 1
+      });
+
+      debt.save(function (err, debt) {
+        agent
+          .get('/api/debts/' + debt._id)
+          .send({ amount: 42.56 })
+          .expect(401)
+          .expect(function(res) {
+            res.body.success.should.be.false;
+            res.body.message.should.equal('Unauthorized request.');
+            res.body.errors.should.be.ok;
+          })
+          .end(done);
+      });
+    });
+
+    it('should send a 404 response with an object containing success and message properties if debt not found', function(done) {
+      var user = new User({ email: ['user@test.com'], password: '123456' });
+
+      user.save(function(err, user) {
+        if (err) done(err);
+        
+        agent
+          .post('/api/auth/login')
+          .send({ email: 'user@test.com', password: '123456' })
+          .end(function(err, res){
+            agent
+              .get('/api/debts/54216e49cc65bfc42b1f0e6f')
+              .send()
+              .expect(404)
+              .expect(function(res) {
+                res.body.success.should.be.false;
+                res.body.message.should.equal('Debt not found.');
+              })
+              .end(done);
+          });
+      });
+    });
+
+    xit('should send a 201 response with an object containing success, message and data properties', function(done) {
+      var date = Date.now();
+      var debtorId = new ObjectId();
+
+      var debt = new Debt({
+        debtor: new ObjectId,
+        creditor: new ObjectId,
+        date: date,
+        reference: 'Test debt',
+        amount: 1
+      });
+      var user = new User({ email: ['user@test.com'], password: '123456' });
+
+      debt.save(function(err, debt) {
+        if (err) done(err);
+
+        user.save(function(err, user) {
+          if (err) done(err);
+          
+          agent
+            .post('/api/auth/login')
+            .send({ email: 'user@test.com', password: '123456' })
+            .end(function(err, res){
+              agent
+                .put('/api/debts/' + debt._id)
+                .send({ amount: 42.56 })
+                .expect(200)
+                .expect(function(res) {
+                  res.body.success.should.be.true;
+                  res.body.message.should.equal('Debt updated successfully.');
+                  res.body.data.should.be.ok;
+                  
+                  (new Date(res.body.data.updated_date).getTime()).should.not.equal(date);
+                  res.body.data.amount.should.equal(42.56);
+                })
+                .end(done);
+            });
+        });
+      });
+    });
   });
 });

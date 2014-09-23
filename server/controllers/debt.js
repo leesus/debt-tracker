@@ -24,6 +24,7 @@ module.exports.getDebtsOwedToUser = function(req, res, next) {
 
   Debt.find({ creditor: user }).order('created_date').exec(function(err, debts) {
     if (err) return next(err);
+    if (!debt) return res.send(404, { success: false, message: 'Debt not found.' });
     return res.send(200, { success: true, message: 'Debts owed to user ' + user, data: debts });
   });
 };
@@ -33,6 +34,7 @@ module.exports.getDebtsOwedByUser = function(req, res, next) {
 
   Debt.find({ debtor: user }).order('created_date').exec(function(err, debts) {
     if (err) return next(err);
+    if (!debt) return res.send(404, { success: false, message: 'Debt not found.' });
     return res.send(200, { success: true, message: 'Debts owed by user ' + user, data: debts });
   });
 };
@@ -41,19 +43,20 @@ module.exports.getDebt = function(req, res, next) {
   var id = req.params.id;
   Debt.findById(id, function(err, debt) {
     if (err) return next(err);
+    if (!debt) return res.send(404, { success: false, message: 'Debt not found.' });
     return res.send(200, { success: true, message: 'Debt found.', data: debt });
   });
 };
 
 module.exports.updateDebt = function(req, res, next) {
   Debt.findById(req.params.id, function(err, debt) {
-    console.log(err)
-    console.log(debt)
     if (err) return next(err);
 
-    _.each(req.body, function(value, key) {
-      if (debt.hasOwnProperty(key)) {
-        debt[key] = value;
+    _.each(Debt.schema.paths, function(value, key) {
+      if (key !== '_id' && key !== '__v') {
+        if (req.body[key]) {
+          debt[key] = req.body[key];
+        }
       }
     });
 
@@ -62,7 +65,7 @@ module.exports.updateDebt = function(req, res, next) {
         res.status(403);
         return next(err);
       }
-      return res.send(200, { success: true, message: 'Debt updated successfully.' });
+      return res.send(200, { success: true, message: 'Debt updated successfully.', data: debt });
     });
   });
 };
@@ -70,6 +73,6 @@ module.exports.updateDebt = function(req, res, next) {
 module.exports.removeDebt = function(req, res, next) {
   Debt.remove({ _id: req.params.id }, function(err) {
     if (err) return next(err);
-    return res.send(200, { success: false, message: 'Debt removed successfully.' });
+    return res.send(200, { success: true, message: 'Debt removed successfully.' });
   });
 };
