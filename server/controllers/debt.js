@@ -22,20 +22,20 @@ module.exports.addDebt = function(req, res, next) {
 module.exports.getDebtsOwedToUser = function(req, res, next) {
   var user = req.user._id;
 
-  Debt.find({ creditor: user }).order('created_date').exec(function(err, debts) {
+  Debt.find({ creditor: user }).sort('date').exec(function(err, debts) {
     if (err) return next(err);
-    if (!debt) return res.send(404, { success: false, message: 'Debt not found.' });
-    return res.send(200, { success: true, message: 'Debts owed to user ' + user, data: debts });
+    if (!debts || !debts.length) return res.send(404, { success: false, message: 'No debts found to be owed to user.' });
+    return res.send(200, { success: true, message: 'Debts owed to user ' + user + '.', data: debts });
   });
 };
 
 module.exports.getDebtsOwedByUser = function(req, res, next) {
   var user = req.user._id;
 
-  Debt.find({ debtor: user }).order('created_date').exec(function(err, debts) {
+  Debt.find({ debtor: user }).sort('date').exec(function(err, debts) {
     if (err) return next(err);
-    if (!debt) return res.send(404, { success: false, message: 'Debt not found.' });
-    return res.send(200, { success: true, message: 'Debts owed by user ' + user, data: debts });
+    if (!debts || !debts.length) return res.send(404, { success: false, message: 'No debts found to be owed by user.' });
+    return res.send(200, { success: true, message: 'Debts owed by user ' + user + '.', data: debts });
   });
 };
 
