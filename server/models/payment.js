@@ -27,4 +27,13 @@ var PaymentSchema = new Schema({
   updated_date: { type: Date, 'default': Date.now }
 });
 
+PaymentSchema.statics.findAllPaidTo = function(name, fn) {
+  return this.find({ creditor: name }, fn);
+};
+
+PaymentSchema.pre('save', function(next) {
+  this.updated_date = Date.now();
+  next();
+});
+
 module.exports = mongoose.model('Payment', PaymentSchema);

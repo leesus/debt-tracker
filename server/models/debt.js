@@ -31,7 +31,7 @@ var DebtSchema = new Schema({
 });
 
 DebtSchema.statics.findAllOwedTo = function(name, fn) {
-  return this.find({ creditor: findAllOwedTo }, fn);
+  return this.find({ creditor: name }, fn);
 };
 
 DebtSchema.pre('save', function(next) {

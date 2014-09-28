@@ -40,10 +40,10 @@ router
   // Payment routes
   .post('/payments', isAuthenticated, controllers.payment.addPayment)
   .put('/payments/:id', isAuthenticated, controllers.payment.updatePayment)
-  .get('/payments/owed', isAuthenticated, controllers.payment.getPaymentsToUser)
-  .get('/payments/owes', isAuthenticated, controllers.payment.getPaymentsByUser)
+  .get('/payments/received', isAuthenticated, controllers.payment.getPaymentsToUser)
+  .get('/payments/paid', isAuthenticated, controllers.payment.getPaymentsByUser)
   .get('/payments/:id', isAuthenticated, controllers.payment.getPayment)
-  .delete('/payments/:id', isAuthenticated, controllers.payment.removePayment)
+  .delete('/payments/:id', isAuthenticated, controllers.payment.removePayment);
 
 // Export routes
 module.exports = router;
