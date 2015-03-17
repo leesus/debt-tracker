@@ -9,45 +9,45 @@ var utils = require('../../utils');
 var http = require('http');
 var ObjectId = require('mongoose').Types.ObjectId;
 
-var debtController = require('../../../controllers/debt');
+var paymentController = require('../../../controllers/payment');
 var User = require('../../../models/user');
-var Debt = require('../../../models/debt');
+var Payment = require('../../../models/payment');
 
 var agent = supertest.agent(app);
 
-describe('Debt controller', function() {
+describe('Payment controller', function() {
 
-  it('should have an addDebt method', function() {
-    debtController.addDebt.should.exist;
-    (typeof debtController.addDebt).should.equal('function');
+  it('should have an addPayment method', function() {
+    paymentController.addPayment.should.exist;
+    (typeof paymentController.addPayment).should.equal('function');
   });
 
-  it('should have a getDebtsOwedByUser method', function() {
-    debtController.getDebtsOwedByUser.should.exist;
-    (typeof debtController.getDebtsOwedByUser).should.equal('function');
+  it('should have a getPaymentsByUser method', function() {
+    paymentController.getPaymentsByUser.should.exist;
+    (typeof paymentController.getPaymentsByUser).should.equal('function');
   });
 
-  it('should have a getDebtsOwedToUser method', function() {
-    debtController.getDebtsOwedToUser.should.exist;
-    (typeof debtController.getDebtsOwedToUser).should.equal('function');
+  it('should have a getPaymentsToUser method', function() {
+    paymentController.getPaymentsToUser.should.exist;
+    (typeof paymentController.getPaymentsToUser).should.equal('function');
   });
 
-  it('should have a getDebt method', function() {
-    debtController.getDebt.should.exist;
-    (typeof debtController.getDebt).should.equal('function');
+  it('should have a getPayment method', function() {
+    paymentController.getPayment.should.exist;
+    (typeof paymentController.getPayment).should.equal('function');
   });
 
-  it('should have an updateDebt method', function() {
-    debtController.updateDebt.should.exist;
-    (typeof debtController.updateDebt).should.equal('function');
+  it('should have an updatePayment method', function() {
+    paymentController.updatePayment.should.exist;
+    (typeof paymentController.updatePayment).should.equal('function');
   });
 
-  it('should have a removeDebt method', function() {
-    debtController.removeDebt.should.exist;
-    (typeof debtController.removeDebt).should.equal('function');
+  it('should have a removePayment method', function() {
+    paymentController.removePayment.should.exist;
+    (typeof paymentController.removePayment).should.equal('function');
   });
 
-  describe('when creating a debt', function() {
+  describe('when creating a payment', function() {
 
     beforeEach(function(done) {
       agent
@@ -57,8 +57,8 @@ describe('Debt controller', function() {
 
     it('should return a 401 response with an object containing success, message and error properties if user not authenticated', function(done) {
       agent
-        .post('/api/debts')
-        .send({ debtor: new ObjectId, date: Date.now(), reference: 'Test bill', amount: 42.56 })
+        .post('/api/payments')
+        .send({ creditor: new ObjectId, date: Date.now(), reference: 'Test payment', amount: 42.56 })
         .expect(401)
         .expect(function(res) {
           res.body.success.should.be.false;
@@ -68,10 +68,9 @@ describe('Debt controller', function() {
         .end(done);
     });
 
-    it('should return a 403 response with an object containing success and message properties if debt is invalid', function(done) {
+    it('should return a 403 response with an object containing success and message properties if payment is invalid', function(done) {
       var date = Date.now();
-      var debtorId = new ObjectId();
-
+      
       var user = new User({ email: ['user@test.com'], password: '123456' });
       user.save(function(err, user) {
         if (err) done(err);
@@ -81,7 +80,7 @@ describe('Debt controller', function() {
           .send({ email: 'user@test.com', password: '123456' })
           .end(function(err, res){
             agent
-              .post('/api/debts')
+              .post('/api/payments')
               .send()
               .expect(403)
               .expect(function(res) {
@@ -95,8 +94,7 @@ describe('Debt controller', function() {
     });
 
     it('should send a 201 response with an object containing success, message and data properties', function(done) {
-      var date = Date.now();
-      var debtorId = new ObjectId();
+      var creditorId = new ObjectId();
 
       var user = new User({ email: ['user@test.com'], password: '123456' });
       user.save(function(err, user) {
@@ -107,18 +105,17 @@ describe('Debt controller', function() {
           .send({ email: 'user@test.com', password: '123456' })
           .end(function(err, res){
             agent
-              .post('/api/debts')
-              .send({ debtor: debtorId, date: date, reference: 'Test bill', amount: 42.56 })
+              .post('/api/payments')
+              .send({ creditor: creditorId, reference: 'Test payment', amount: 42.56 })
               .expect(201)
               .expect(function(res) {
                 res.body.success.should.be.true;
-                res.body.message.should.equal('Debt created successfully.');
+                res.body.message.should.equal('Payment created successfully.');
                 res.body.data.should.be.ok;
 
-                String(res.body.data.creditor).should.equal(String(user._id));
-                String(res.body.data.debtor).should.equal(String(debtorId));
-                (new Date(res.body.data.date).getTime()).should.equal(date);
-                res.body.data.reference.should.equal('Test bill');
+                String(res.body.data.debtor).should.equal(String(user._id));
+                String(res.body.data.creditor).should.equal(String(creditorId));
+                res.body.data.reference.should.equal('Test payment');
                 res.body.data.amount.should.equal(42.56);
               })
               .end(done);
@@ -127,7 +124,7 @@ describe('Debt controller', function() {
     });
   });
 
-  describe('when updating a debt', function() {
+  describe('when updating a payment', function() {
     
     beforeEach(function(done) {
       agent
@@ -136,17 +133,17 @@ describe('Debt controller', function() {
     });
 
     it('should return a 401 response with an object containing success, message and error properties if user not authenticated', function(done) {
-      var debt = new Debt({
+      var payment = new Payment({
         debtor: new ObjectId,
         creditor: new ObjectId,
         date: Date.now(),
-        reference: 'Test debt',
+        reference: 'Test payment',
         amount: 1
       });
 
-      debt.save(function (err, debt) {
+      payment.save(function (err, payment) {
         agent
-          .put('/api/debts/' + debt._id)
+          .put('/api/payments/' + payment._id)
           .send({ amount: 42.56 })
           .expect(401)
           .expect(function(res) {
@@ -160,18 +157,18 @@ describe('Debt controller', function() {
 
     it('should send a 200 response with an object containing success, message and data properties', function(done) {
       var date = Date.now();
-      var debtorId = new ObjectId();
+      var creditorId = new ObjectId();
 
-      var debt = new Debt({
+      var payment = new Payment({
         debtor: new ObjectId,
         creditor: new ObjectId,
         date: date,
-        reference: 'Test debt',
+        reference: 'Test payment',
         amount: 1
       });
       var user = new User({ email: ['user@test.com'], password: '123456' });
 
-      debt.save(function(err, debt) {
+      payment.save(function(err, payment) {
         if (err) done(err);
 
         user.save(function(err, user) {
@@ -182,12 +179,12 @@ describe('Debt controller', function() {
             .send({ email: 'user@test.com', password: '123456' })
             .end(function(err, res){
               agent
-                .put('/api/debts/' + debt._id)
+                .put('/api/payments/' + payment._id)
                 .send({ amount: 42.56 })
                 .expect(200)
                 .expect(function(res) {
                   res.body.success.should.be.true;
-                  res.body.message.should.equal('Debt updated successfully.');
+                  res.body.message.should.equal('Payment updated successfully.');
                   res.body.data.should.be.ok;
                   
                   (new Date(res.body.data.updated_date).getTime()).should.not.equal(date);
@@ -200,7 +197,7 @@ describe('Debt controller', function() {
     });
   });
 
-  describe('when removing a debt', function() {
+  describe('when removing a payment', function() {
     
     beforeEach(function(done) {
       agent
@@ -209,17 +206,17 @@ describe('Debt controller', function() {
     });
 
     it('should return a 401 response with an object containing success, message and error properties if user not authenticated', function(done) {
-      var debt = new Debt({
+      var payment = new Payment({
         debtor: new ObjectId,
         creditor: new ObjectId,
         date: Date.now(),
-        reference: 'Test debt',
+        reference: 'Test payment',
         amount: 1
       });
 
-      debt.save(function (err, debt) {
+      payment.save(function (err, payment) {
         agent
-          .delete('/api/debts/' + debt._id)
+          .delete('/api/payments/' + payment._id)
           .send()
           .expect(401)
           .expect(function(res) {
@@ -233,18 +230,18 @@ describe('Debt controller', function() {
 
     it('should send a 200 response with an object containing success and message properties', function(done) {
       var date = Date.now();
-      var debtorId = new ObjectId();
+      var creditorId = new ObjectId();
 
-      var debt = new Debt({
+      var payment = new Payment({
         debtor: new ObjectId,
         creditor: new ObjectId,
         date: date,
-        reference: 'Test debt',
+        reference: 'Test payment',
         amount: 1
       });
       var user = new User({ email: ['user@test.com'], password: '123456' });
 
-      debt.save(function(err, debt) {
+      payment.save(function(err, payment) {
         if (err) done(err);
 
         user.save(function(err, user) {
@@ -255,12 +252,12 @@ describe('Debt controller', function() {
             .send({ email: 'user@test.com', password: '123456' })
             .end(function(err, res){
               agent
-                .delete('/api/debts/' + debt._id)
+                .delete('/api/payments/' + payment._id)
                 .send()
                 .expect(200)
                 .expect(function(res) {
                   res.body.success.should.be.true;
-                  res.body.message.should.equal('Debt removed successfully.');
+                  res.body.message.should.equal('Payment removed successfully.');
                 })
                 .end(done);
             });
@@ -269,7 +266,7 @@ describe('Debt controller', function() {
     });
   });
 
-  describe('when retrieving a debt', function() {
+  describe('when retrieving a payment', function() {
     
     beforeEach(function(done) {
       agent
@@ -278,17 +275,17 @@ describe('Debt controller', function() {
     });
 
     it('should return a 401 response with an object containing success, message and error properties if user not authenticated', function(done) {
-      var debt = new Debt({
+      var payment = new Payment({
         debtor: new ObjectId,
         creditor: new ObjectId,
         date: Date.now(),
-        reference: 'Test debt',
+        reference: 'Test payment',
         amount: 1
       });
 
-      debt.save(function (err, debt) {
+      payment.save(function (err, payment) {
         agent
-          .get('/api/debts/' + debt._id)
+          .get('/api/payments/' + payment._id)
           .send({ amount: 42.56 })
           .expect(401)
           .expect(function(res) {
@@ -300,7 +297,7 @@ describe('Debt controller', function() {
       });
     });
 
-    it('should send a 200 response with an object containing success, message and empty data properties if debt not found', function(done) {
+    it('should send a 404 response with an object containing success and message properties if payment not found', function(done) {
       var user = new User({ email: ['user@test.com'], password: '123456' });
 
       user.save(function(err, user) {
@@ -311,33 +308,32 @@ describe('Debt controller', function() {
           .send({ email: 'user@test.com', password: '123456' })
           .end(function(err, res){
             agent
-              .get('/api/debts/54216e49cc65bfc42b1f0e6f')
+              .get('/api/payments/54216e49cc65bfc42b1f0e6f')
               .send()
-              .expect(200)
+              .expect(404)
               .expect(function(res) {
                 res.body.success.should.be.false;
-                res.body.message.should.equal('Debt not found.');
-                res.body.data.length.should.equal(0);
+                res.body.message.should.equal('Payment not found.');
               })
               .end(done);
           });
       });
     });
 
-    it('should send a 200 response with an object containing success, message and data properties', function(done) {
+    it('should send a 201 response with an object containing success, message and data properties', function(done) {
       var date = Date.now();
-      var debtorId = new ObjectId();
+      var creditorId = new ObjectId();
 
-      var debt = new Debt({
+      var payment = new Payment({
         debtor: new ObjectId,
         creditor: new ObjectId,
         date: date,
-        reference: 'Test debt',
+        reference: 'Test payment',
         amount: 1
       });
       var user = new User({ email: ['user@test.com'], password: '123456' });
 
-      debt.save(function(err, debt) {
+      payment.save(function(err, payment) {
         if (err) done(err);
 
         user.save(function(err, user) {
@@ -348,12 +344,12 @@ describe('Debt controller', function() {
             .send({ email: 'user@test.com', password: '123456' })
             .end(function(err, res){
               agent
-                .get('/api/debts/' + debt._id)
+                .get('/api/payments/' + payment._id)
                 .send()
                 .expect(200)
                 .expect(function(res) {
                   res.body.success.should.be.true;
-                  res.body.message.should.equal('Debt found.');
+                  res.body.message.should.equal('Payment found.');
                   res.body.data.should.be.ok;
                 })
                 .end(done);
@@ -363,14 +359,14 @@ describe('Debt controller', function() {
     });
   });
 
-  describe('when retrieving debts owed to a user', function() {
+  describe('when retrieving payments paid to a user', function() {
 
     var user1 = null;
     var user2 = null;
-    var debt1 = null;
-    var debt2 = null;
-    var debt3 = null;
-    var debt4 = null;
+    var payment1 = null;
+    var payment2 = null;
+    var payment3 = null;
+    var payment4 = null;
     
     beforeEach(function(done) {
       user1 = new User({
@@ -381,32 +377,32 @@ describe('Debt controller', function() {
         email: ['user2@test.com'],
         password: '123456'
       });
-      debt1 = new Debt({
+      payment1 = new Payment({
         debtor: user1._id,
         creditor: user2._id,
         date: Date.now() + 1,
-        reference: 'Test owed by 1 to 2',
+        reference: 'Test paid by 1 to 2',
         amount: 1
       });
-      debt2 = new Debt({
+      payment2 = new Payment({
         debtor: user2._id,
         creditor: user1._id,
         date: Date.now() + 2,
-        reference: 'Test owed by 2 to 1',
+        reference: 'Test paid by 2 to 1',
         amount: 1
       });
-      debt3 = new Debt({
+      payment3 = new Payment({
         debtor: user1._id,
         creditor: user2._id,
         date: Date.now() + 3,
-        reference: 'Test owed by 1 to 2',
+        reference: 'Test paid by 1 to 2',
         amount: 2
       });
-      debt4 = new Debt({
+      payment4 = new Payment({
         debtor: user2._id,
         creditor: user1._id,
         date: Date.now() + 4,
-        reference: 'Test owed by 2 to 1',
+        reference: 'Test paid by 2 to 1',
         amount: 2
       });
 
@@ -415,13 +411,13 @@ describe('Debt controller', function() {
         if (err) done(err);
         user2.save(function(err, user2) {
           if (err) done(err);
-          debt1.save(function(err, debt1) {
+          payment1.save(function(err, payment1) {
             if (err) done(err);
-            debt2.save(function(err, debt2) {
+            payment2.save(function(err, payment2) {
               if (err) done(err);
-              debt3.save(function(err, debt3) {
+              payment3.save(function(err, payment3) {
                 if (err) done(err);
-                debt4.save(function(err, debt4) {
+                payment4.save(function(err, payment4) {
                   if (err) done(err);
                   agent
                     .get('/api/auth/logout')
@@ -436,7 +432,7 @@ describe('Debt controller', function() {
 
     it('should return a 401 response with an object containing success, message and error properties if user not authenticated', function(done) {
       agent
-        .get('/api/debts/owed')
+        .get('/api/payments/received')
         .send()
         .expect(401)
         .expect(function(res) {
@@ -447,7 +443,7 @@ describe('Debt controller', function() {
         .end(done);
     });
 
-    it('should send a 200 response with an object containing success and message properties if debt not found', function(done) {
+    it('should send a 404 response with an object containing success and message properties if payment not found', function(done) {
       var user = new User({ email: ['user@test.com'], password: '123456' });
 
       user.save(function(err, user) {
@@ -457,13 +453,12 @@ describe('Debt controller', function() {
           .send({ email: 'user@test.com', password: '123456' })
           .end(function(err, res){
             agent
-              .get('/api/debts/owed')
+              .get('/api/payments/received')
               .send()
-              .expect(200)
+              .expect(404)
               .expect(function(res) {
-                res.body.success.should.be.true;
-                res.body.message.should.equal('No debts found to be owed to user.');
-                res.body.data.length.should.equal(0);
+                res.body.success.should.be.false;
+                res.body.message.should.equal('No payments found to be paid to user.');
               })
               .end(done);
           });
@@ -476,16 +471,16 @@ describe('Debt controller', function() {
         .send({ email: 'user1@test.com', password: '123456' })
         .end(function(err, res){
           agent
-            .get('/api/debts/owed')
+            .get('/api/payments/received')
             .send()
             .expect(200)
             .expect(function(res) {
               res.body.success.should.be.true;
-              res.body.message.should.equal('Debts owed to user ' + user1._id + '.');
+              res.body.message.should.equal('Payments paid to user ' + user1._id + '.');
               res.body.data.length.should.equal(2);
-              res.body.data[0].reference.should.equal('Test owed by 2 to 1');
+              res.body.data[0].reference.should.equal('Test paid by 2 to 1');
               res.body.data[0].amount.should.equal(1);
-              res.body.data[1].reference.should.equal('Test owed by 2 to 1');
+              res.body.data[1].reference.should.equal('Test paid by 2 to 1');
               res.body.data[1].amount.should.equal(2);
             })
             .end(done);
@@ -493,14 +488,14 @@ describe('Debt controller', function() {
     });
   });
 
-  describe('when retrieving debts owed by a user', function() {
+  describe('when retrieving payments owed by a user', function() {
 
     var user1 = null;
     var user2 = null;
-    var debt1 = null;
-    var debt2 = null;
-    var debt3 = null;
-    var debt4 = null;
+    var payment1 = null;
+    var payment2 = null;
+    var payment3 = null;
+    var payment4 = null;
     
     beforeEach(function(done) {
       user1 = new User({
@@ -511,32 +506,32 @@ describe('Debt controller', function() {
         email: ['user2@test.com'],
         password: '123456'
       });
-      debt1 = new Debt({
+      payment1 = new Payment({
         debtor: user1._id,
         creditor: user2._id,
         date: Date.now() + 1,
-        reference: 'Test owed by 1 to 2',
+        reference: 'Test paid by 1 to 2',
         amount: 1
       });
-      debt2 = new Debt({
+      payment2 = new Payment({
         debtor: user2._id,
         creditor: user1._id,
         date: Date.now() + 2,
-        reference: 'Test owed by 2 to 1',
+        reference: 'Test paid by 2 to 1',
         amount: 1
       });
-      debt3 = new Debt({
+      payment3 = new Payment({
         debtor: user1._id,
         creditor: user2._id,
         date: Date.now() + 3,
-        reference: 'Test owed by 1 to 2',
+        reference: 'Test paid by 1 to 2',
         amount: 2
       });
-      debt4 = new Debt({
+      payment4 = new Payment({
         debtor: user2._id,
         creditor: user1._id,
         date: Date.now() + 4,
-        reference: 'Test owed by 2 to 1',
+        reference: 'Test paid by 2 to 1',
         amount: 2
       });
 
@@ -545,13 +540,13 @@ describe('Debt controller', function() {
         if (err) done(err);
         user2.save(function(err, user2) {
           if (err) done(err);
-          debt1.save(function(err, debt1) {
+          payment1.save(function(err, payment1) {
             if (err) done(err);
-            debt2.save(function(err, debt2) {
+            payment2.save(function(err, payment2) {
               if (err) done(err);
-              debt3.save(function(err, debt3) {
+              payment3.save(function(err, payment3) {
                 if (err) done(err);
-                debt4.save(function(err, debt4) {
+                payment4.save(function(err, payment4) {
                   if (err) done(err);
                   agent
                     .get('/api/auth/logout')
@@ -566,7 +561,7 @@ describe('Debt controller', function() {
 
     it('should return a 401 response with an object containing success, message and error properties if user not authenticated', function(done) {
       agent
-        .get('/api/debts/owes')
+        .get('/api/payments/paid')
         .send()
         .expect(401)
         .expect(function(res) {
@@ -577,7 +572,7 @@ describe('Debt controller', function() {
         .end(done);
     });
 
-    it('should send a 200 response with an object containing success and message properties if debt not found', function(done) {
+    it('should send a 404 response with an object containing success and message properties if payment not found', function(done) {
       var user = new User({ email: ['user@test.com'], password: '123456' });
 
       user.save(function(err, user) {
@@ -588,13 +583,12 @@ describe('Debt controller', function() {
           .send({ email: 'user@test.com', password: '123456' })
           .end(function(err, res){
             agent
-              .get('/api/debts/owes')
+              .get('/api/payments/paid')
               .send()
-              .expect(200)
+              .expect(404)
               .expect(function(res) {
-                res.body.success.should.be.true;
-                res.body.message.should.equal('No debts found to be owed by user.');
-                res.body.data.length.should.equal(0);
+                res.body.success.should.be.false;
+                res.body.message.should.equal('No payments found to be paid by user.');
               })
               .end(done);
           });
@@ -607,16 +601,16 @@ describe('Debt controller', function() {
         .send({ email: 'user1@test.com', password: '123456' })
         .end(function(err, res){
           agent
-            .get('/api/debts/owes')
+            .get('/api/payments/paid')
             .send()
             .expect(200)
             .expect(function(res) {
               res.body.success.should.be.true;
-              res.body.message.should.equal('Debts owed by user ' + user1._id + '.');
+              res.body.message.should.equal('Payments paid by user ' + user1._id + '.');
               res.body.data.length.should.equal(2);
-              res.body.data[0].reference.should.equal('Test owed by 1 to 2');
+              res.body.data[0].reference.should.equal('Test paid by 1 to 2');
               res.body.data[0].amount.should.equal(1);
-              res.body.data[1].reference.should.equal('Test owed by 1 to 2');
+              res.body.data[1].reference.should.equal('Test paid by 1 to 2');
               res.body.data[1].amount.should.equal(2);
             })
             .end(done);

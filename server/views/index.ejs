@@ -27,7 +27,7 @@
       <li ng-class="{ active: isActive('/account') }">
         <a href="/account" title="Account settings">
           <span class="glyphicon glyphicon-cog"></span>
-          {{ currentUser.displayName || currentUser.local.email }}
+          {{ currentUser.display_name || currentUser.local.email }}
         </a>
       </li>
       <li><a href="javascript:void(0)" ng-click="logout()">Logout</a></li>
@@ -43,13 +43,15 @@
     <script src="vendor/angular-resource.js"></script>
     <script src="vendor/angular-route.js"></script>
     <script src="vendor/angular-cookies.js"></script>
+    <script src="vendor/ui-bootstrap-custom-0.12.1.js"></script>
+    <script src="vendor/ui-bootstrap-custom-tpls-0.12.1.js"></script>
     <!--<script src="vendor/moment.min.js"></script>-->
     <script src="app.js"></script>
-    <!--<script src="services/show.js"></script>
-    <script src="services/subscription.js"></script>-->
+    <script src="services/debts.js"></script>
+    <script src="services/user.js"></script>
+    <!--<script src="services/subscription.js"></script>-->
     <script src="services/session.js"></script>
-    <!--<script src="filters/fromNow.js"></script>
-    <script src="directives/repeatPassword.js"></script>-->
+    <!--<script src="filters/fromNow.js"></script>-->
     <script src="controllers/navbar.js"></script>
     <script src="controllers/home.js"></script>
     <script src="controllers/login.js"></script>

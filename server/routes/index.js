@@ -29,7 +29,14 @@ router
   .get('/auth/failure', function(req, res) {
     res.render('after-auth.ejs', { state: 'failure', user: null });
   })
-  // User routes - profile
+  // Profile routes
+  // User routes
+  .post('/users', isAuthenticated, controllers.user.addUser)
+  .put('/users/:id', isAuthenticated, controllers.user.updateUser)
+  .get('/users', isAuthenticated, controllers.user.getUsers)
+  .get('/users/search/:query', isAuthenticated, controllers.user.findUsers)
+  .get('/users/:id', isAuthenticated, controllers.user.getUserById)
+  .delete('/users/:id', isAuthenticated, controllers.user.removeUser)
   // Debt routes
   .post('/debts', isAuthenticated, controllers.debt.addDebt)
   .put('/debts/:id', isAuthenticated, controllers.debt.updateDebt)

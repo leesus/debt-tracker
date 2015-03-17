@@ -8,7 +8,6 @@ var Schema = mongoose.Schema;
 var UserSchema = new Schema({
   first_name: String,
   last_name: String,
-  display_name: String,
 
   email: [{ type: String, required: true }],
   password: String,
@@ -26,6 +25,9 @@ var UserSchema = new Schema({
 
   repaid: [{ type: Schema.Types.ObjectId, ref: 'Payment' }],
   owed: [{ type: Schema.Types.ObjectId, ref: 'Debt' }]
+}, {
+    toObject: { virtuals: true },
+    toJSON: { virtuals: true }
 });
 
 UserSchema.pre('save', function(next) {
@@ -50,13 +52,15 @@ UserSchema.methods.comparePassword = function(password, fn) {
   });
 };
 
-UserSchema.virtual('name').get(function(){
+UserSchema.virtual('display_name').get(function(){
   return this.first_name + ' ' + this.last_name;
 });
 
-UserSchema.virtual('name').set(function(name){
+UserSchema.virtual('display_name').set(function(name){
   this.first_name = name.split(' ')[0];
   this.last_name = name.split(' ')[1];
 });
+
+UserSchema.index({ name: 'text', email: 'text' });
 
 module.exports = mongoose.model('User', UserSchema);

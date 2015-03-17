@@ -1,4 +1,4 @@
-angular.module('debttracker', ['ngCookies', 'ngResource', 'ngMessages', 'ngRoute', 'mgcrea.ngStrap'])
+angular.module('debttracker', ['ngCookies', 'ngResource', 'ngMessages', 'ngRoute', 'mgcrea.ngStrap', 'ui.bootstrap'])
   .config(['$routeProvider', '$locationProvider', '$httpProvider',
     function($routeProvider, $locationProvider, $httpProvider) {
 
@@ -35,7 +35,7 @@ angular.module('debttracker', ['ngCookies', 'ngResource', 'ngMessages', 'ngRoute
         .when('/signup', { templateUrl: 'views/signup.html', controller: 'SignupCtrl' })
         .whenAuthenticated('/account', { templateUrl: 'views/account.html', controller: 'AccountCtrl' })
         .whenAuthenticated('/owe', { templateUrl: 'views/owe.html', controller: 'OweCtrl' })
-        .whenAuthenticated('/owed', { templateUrl: 'views/owed.html', controller: 'OwedCtrl' })
+        .whenAuthenticated('/owed', { templateUrl: 'views/owed.html', controller: 'OwedCtrl as owed' })
         .otherwise({ redirectTo: '/' });
   }])
   .run(['$location', '$rootScope', '$window', 'session',

@@ -5,64 +5,124 @@
   </div>
 </div>
 
-<div class="container">
+<div class="container ng-cloak" ng-show="owed.debts.length && owed.wizard == 0">
   <p class="clearfix">
-    <button class="btn btn-primary pull-right" ng-click="addDebt()">Add a debt</button>
+    <button class="btn btn-primary pull-right" ng-click="owed.wizard = 1">Add a debt</button>
   </p>
-
-  <!-- <div class="row">
-    <div class="center-form panel">
-      <form method="post" ng-submit="addDebt()" name="addDebtForm">
-        <div class="panel-body">
-          <h2 class="text-center">Add a debt</h2>
-
-          <div class="form-group"
-               ng-class="{ 'has-success' : signupForm.email.$valid && signupForm.email.$dirty, 'has-error' : signupForm.email.$invalid && signupForm.email.$dirty }">
-            <input class="form-control input-lg" type="email" id="email"
-                   name="date" ng-model="date" placeholder="Date" required
-                   autofocus>
-
-            <div class="help-block text-danger" ng-if="signupForm.email.$dirty"
-                 ng-messages="signupForm.email.$error">
-              <div ng-message="required">Your email address is required.</div>
-              <div ng-message="email">Your email address is invalid.</div>
-            </div>
-          </div>
-
-          <div class="form-group"
-               ng-class="{ 'has-success' : signupForm.password.$valid && signupForm.password.$dirty, 'has-error' : signupForm.password.$invalid && signupForm.password.$dirty }">
-            <input class="form-control input-lg" type="password" name="password"
-                   ng-model="password" placeholder="Password" required>
-
-            <div class="help-block text-danger"
-                 ng-if="signupForm.password.$dirty"
-                 ng-messages="signupForm.password.$error">
-              <div ng-message="required">Password is required.</div>
-            </div>
-          </div>
-
-          <button type="submit" ng-disabled="signupForm.$invalid"
-                  class="btn btn-lg btn-block btn-primary">Create Account
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
- -->
   <table class="panel table table-bordered table-responsive">
     <thead>
       <th>Date</th>
-      <th><dfn title="The person you owe">Creditor</dfn></th>
-      <th><dfn title="Why you owe them">Reason</dfn></th>
+      <th><dfn title="The person you owe">Debtor</dfn></th>
+      <th><dfn title="Why you owe them">Reference</dfn></th>
       <th>Amount</th>
     </thead>
     <tbody>
-      <tr>
-        <td>29th August 2014</td>
-        <td>John Smith</td>
-        <td>A pint or two down the Wheatsheaf</td>
-        <td>£10.21</td>
+      <tr ng-repeat="debt in owed.debts">
+        <td ng-bind="debt.date | date"></td>
+        <td ng-bind="debt.debtor.display_name"></td>
+        <td ng-bind="debt.reference"></td>
+        <td ng-bind="debt.amount | currency"></td>
       </tr>
     </tbody>
   </table>
 </div>
+
+<div class="container ng-cloak" ng-show="!owed.debts.length && owed.wizard == 0">
+  <div class="no-debts panel text-center">
+    <div class="panel-body">
+      <p>Looks like you're not owed any money yet!</p>
+      <button class="btn btn-lg btn-primary" ng-click="owed.wizard = 1">Add a debt</button>
+    </div>
+  </div>
+</div>
+
+<div class="container ng-cloak" ng-show="owed.wizard == 1">
+  <div class="panel">
+    <div class="panel-body">
+      <h2 class="text-center">Find a debtor</h2>
+      <p>First, search for a debtor to assign a debt to. If the user is not already a member of DebtTracker, you can add them and we will invite them for you.</p>
+
+      <div class="form-group">
+        <label for="user">Find user</label>
+        <input id="user" name="user" placeholder="User's name or email address" autofocus class="form-control input-lg" typeahead="user as user.display_name for user in owed.findUsers($viewValue)" typeahead-template-url="customTemplate.html" typeahead-min-length="3" typeahead-wait-ms="500" typeahead-on-select="owed.createUserModel($item)" typeahead-editable="false" ng-model="owed.user" typeahead-loading="owed.loading">
+        <i ng-show="owed.loading" class="glyphicon glyphicon-refresh"></i>
+        <div><a href="javascript:void 0" title="Invite a user?" ng-click="owed.wizard = 2">Add a new user?</a></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container ng-cloak" ng-show="owed.wizard == 2">
+  <div class="panel">
+    <div class="panel-body">
+      <h2 class="text-center">Add a new debtor</h2>
+      <p>Add a new debtor and we will invite them to DebtTracker for you and let them know they owe you money!</p>
+
+      <div class="form-group" ng-hide="owed.displayAddUserForm">
+        <div class="form-group">
+          <label for="firstName">First name</label>
+          <input name="firstName" id="firstName" ng-model="owed.user.first_name" placeholder="Debtor's first name" class="form-control input-lg">
+        </div>
+        <div class="form-group">
+          <label for="surname">Surname</label>
+          <input name="surname" id="surname" ng-model="owed.user.last_name" placeholder="Debtor's surname" class="form-control input-lg">
+        </div>
+        <div class="form-group">
+          <label for="email">Email address</label>
+          <input type="email" name="email" id="email" ng-model="owed.user.email" placeholder="Debtor's email address" class="form-control input-lg">
+        </div>
+        <button type="button" class="btn btn-lg btn-block btn-primary" ng-click="owed.addUser()">Add debtor</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container ng-cloak" ng-show="owed.wizard == 3">
+  <div class="panel">
+    <div class="panel-body">
+      <h2 class="text-center">Add a debt</h2>
+      
+      <div class="form-group">
+        <div class="form-group">
+          <label for="firstName">First name</label>
+          <input name="firstName" id="firstName" value="{{owed.user.first_name}}" placeholder="Debtor's first name" class="form-control input-lg" disabled>
+        </div>
+        <div class="form-group">
+          <label for="surname">Surname</label>
+          <input name="surname" id="surname" value="{{owed.user.last_name}}" placeholder="Debtor's surname" class="form-control input-lg" disabled>
+        </div>
+        <div class="form-group">
+          <label for="email">Email address</label>
+          <input type="email" name="email" id="email" value="{{owed.user.email[0]}}" placeholder="Debtor's email address" class="form-control input-lg" disabled>
+        </div>
+        <div class="form-group">
+          <label for="date">Date</label>
+          <input type="date" name="date" id="date" ng-model="owed.debt.date" placeholder="Date of debt" class="form-control input-lg">
+        </div>
+
+        <div class="form-group">
+          <label for="reference">Reference</label>
+          <input name="reference" id="reference" ng-model="owed.debt.reference" placeholder="Reason of debt" class="form-control input-lg">
+        </div>
+
+        <div class="form-group">
+          <label for="amount">Amount</label>
+          <input name="amount" id="amount" ng-model="owed.debt.amount" placeholder="Debt amount" class="form-control input-lg">
+        </div>
+        <button type="button" class="btn btn-lg btn-block btn-primary" ng-click="owed.addDebt()">Add debt</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/ng-template" id="customTemplate.html">
+  <div class="search-result" ng-if="!match.model.isNoResult">
+    <div ng-bind="match.model.display_name"></div>
+    <div ng-bind="match.model.email[0]"></div>
+  </div>
+  <div class="search-no-results" ng-if="match.model.isNoResult" ng-click="owed.createNewUser($event, $viewValue)">No users found, add new user</div>
+</script>
+
+
+
+
